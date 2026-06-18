@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="hireBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0F172A"/>
+      <stop offset="1" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="hireFg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#A5B4FC"/>
+      <stop offset="1" stop-color="#6366F1"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#hireBg)"/>
+  <!-- Tuning fork mark inside an H -->
+  <g fill="none" stroke="url(#hireFg)" stroke-width="6" stroke-linecap="round">
+    <line x1="18" y1="14" x2="18" y2="50"/>
+    <line x1="46" y1="14" x2="46" y2="50"/>
+    <line x1="18" y1="32" x2="46" y2="32"/>
+  </g>
+  <circle cx="32" cy="48" r="3.5" fill="url(#hireFg)"/>
+</svg>
