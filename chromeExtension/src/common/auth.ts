@@ -35,11 +35,25 @@ interface FirebaseConfig {
 }
 
 /**
+ * Public Firebase web config baked in at build time (see webpack DefinePlugin,
+ * sourced from the root .env NEXT_PUBLIC_FIREBASE_* values). These keys are
+ * client-safe — the website already ships them to every browser — so they let
+ * the extension authenticate out of the box. The Options page can still
+ * override them for a different project without rebuilding.
+ */
+const BUILT_IN_CONFIG: FirebaseConfig = {
+  apiKey: process.env.FIREBASE_API_KEY ?? "",
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN ?? "",
+  projectId: process.env.FIREBASE_PROJECT_ID ?? "",
+  appId: process.env.FIREBASE_APP_ID ?? "",
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET ?? "",
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID ?? "",
+};
+
+/**
  * Read Firebase config from extension settings (chrome.storage.sync) so users
- * can configure it via the Options page without rebuilding the extension.
- *
- * Defaults can be baked in at build time via process.env.FIREBASE_* if you
- * prefer not to ship raw keys in source.
+ * can override it via the Options page, falling back to the build-time
+ * defaults baked in from the root .env.
  */
 async function loadFirebaseConfig(): Promise<FirebaseConfig | null> {
   const stored = await chrome.storage.sync.get([
@@ -52,12 +66,12 @@ async function loadFirebaseConfig(): Promise<FirebaseConfig | null> {
   ]);
 
   const cfg: FirebaseConfig = {
-    apiKey: stored.firebaseApiKey,
-    authDomain: stored.firebaseAuthDomain,
-    projectId: stored.firebaseProjectId,
-    appId: stored.firebaseAppId,
-    storageBucket: stored.firebaseStorageBucket,
-    messagingSenderId: stored.firebaseMessagingSenderId,
+    apiKey: stored.firebaseApiKey || BUILT_IN_CONFIG.apiKey,
+    authDomain: stored.firebaseAuthDomain || BUILT_IN_CONFIG.authDomain,
+    projectId: stored.firebaseProjectId || BUILT_IN_CONFIG.projectId,
+    appId: stored.firebaseAppId || BUILT_IN_CONFIG.appId,
+    storageBucket: stored.firebaseStorageBucket || BUILT_IN_CONFIG.storageBucket,
+    messagingSenderId: stored.firebaseMessagingSenderId || BUILT_IN_CONFIG.messagingSenderId,
   };
 
   if (!cfg.apiKey || !cfg.authDomain || !cfg.projectId || !cfg.appId) return null;
@@ -79,55 +93,89 @@ async function getFirebase(): Promise<Auth | null> {
   return cachedAuth;
 }
 
-/** Wrapper around chrome.identity.getAuthToken that returns a Promise. */
-function getGoogleAccessToken(interactive: boolean): Promise<string | null> {
-  return new Promise((resolve) => {
-    if (!chrome.identity || !chrome.identity.getAuthToken) {
-      resolve(null);
+/**
+ * Run the website-bridge OAuth flow. The bridge page on hiretuner.com handles
+ * Firebase signInWithPopup and redirects back to our chromiumapp.org callback
+ * with the ID token in the URL fragment. This avoids needing a separate
+ * Chrome App OAuth client_id and works with the existing Firebase setup.
+ */
+function launchBridgeFlow(apiUrl: string): Promise<{
+  idToken: string;
+  email: string | null;
+  name: string | null;
+}> {
+  return new Promise((resolve, reject) => {
+    if (!chrome.identity || !chrome.identity.launchWebAuthFlow) {
+      reject(new Error("chrome.identity.launchWebAuthFlow is unavailable."));
       return;
     }
-    chrome.identity.getAuthToken({ interactive }, (token: unknown) => {
-      if (chrome.runtime.lastError || !token) {
-        resolve(null);
-        return;
-      }
-      if (typeof token === "string") {
-        resolve(token);
-        return;
-      }
-      const objToken = token as { token?: string };
-      resolve(objToken.token ?? null);
-    });
+    const redirectUri = chrome.identity.getRedirectURL("oauth");
+    const bridgeUrl = `${apiUrl.replace(/\/$/, "")}/extension-auth?redirect=${encodeURIComponent(
+      redirectUri,
+    )}`;
+    chrome.identity.launchWebAuthFlow(
+      { url: bridgeUrl, interactive: true },
+      (responseUrl) => {
+        const errMsg = chrome.runtime.lastError?.message;
+        if (errMsg || !responseUrl) {
+          reject(new Error(errMsg || "Sign-in cancelled."));
+          return;
+        }
+        try {
+          const parsed = new URL(responseUrl);
+          const hashStr = (parsed.hash || "").replace(/^#/, "");
+          const hash = new URLSearchParams(hashStr);
+          const idToken = hash.get("idToken");
+          if (!idToken) {
+            reject(new Error("Bridge response did not include an ID token."));
+            return;
+          }
+          resolve({
+            idToken,
+            email: hash.get("email"),
+            name: hash.get("name"),
+          });
+        } catch (e) {
+          reject(e instanceof Error ? e : new Error("Failed to parse bridge response."));
+        }
+      },
+    );
   });
 }
 
 /**
- * Start a fresh Google sign-in. Returns the Firebase ID token after a
- * successful exchange with the HireTuner backend.
+ * Start a fresh Google sign-in via the hiretuner.com bridge. Returns the
+ * Firebase ID token after a successful exchange with the HireTuner backend.
  */
 export async function signInWithGoogle(): Promise<{
   idToken: string;
   user: { email: string | null; name: string | null; uid: string };
 } | null> {
-  const auth = await getFirebase();
-  if (!auth) {
-    throw new Error(
-      "Firebase isn't configured in extension settings yet. Open Settings to add your project keys.",
-    );
-  }
+  // Firebase Web SDK is no longer strictly required in the extension itself —
+  // the bridge page handles signInWithPopup — but we still load it so the
+  // cached current user / token-refresh paths can run inside the extension.
+  await getFirebase().catch(() => null);
 
-  const accessToken = await getGoogleAccessToken(true);
-  if (!accessToken) {
-    throw new Error("Could not obtain a Google access token from chrome.identity.");
-  }
+  const apiUrl = (await getApiUrl()).replace(/\/$/, "");
+  const bridge = await launchBridgeFlow(apiUrl);
+  const idToken = bridge.idToken;
 
-  // Sign into Firebase using the access token from chrome.identity.
-  const credential = GoogleAuthProvider.credential(null, accessToken);
-  const result = await signInWithCredential(auth, credential);
-  const idToken = await result.user.getIdToken();
+  // Build a fake-ish user object using the email/name we got from the bridge.
+  // The Firebase Web SDK isn't sign-in-state-aware here, but the backend trusts
+  // the ID token, and we cache enough locally to render the popup correctly.
+  const result = {
+    user: {
+      uid: bridge.email ?? "ext-user",
+      email: bridge.email,
+      displayName: bridge.name,
+      getIdToken: async () => idToken,
+    },
+  };
 
   // Tell the backend so it can mint a HireTuner session and provision the user.
-  const apiUrl = (await getApiUrl()).replace(/\/$/, "");
+  // The bridge page already POSTed to /api/auth/firebase, but we repeat it from
+  // the extension context so the Authorization: Bearer flow is exercised at
+  // least once before user actions hit tool routes.
   const exchange = await fetch(`${apiUrl}/api/auth/firebase`, {
     method: "POST",
     headers: {
@@ -214,20 +262,9 @@ export async function signOut(): Promise<void> {
   const auth = await getFirebase();
   if (auth) await firebaseSignOut(auth);
 
-  // Revoke the cached Google token so the next sign-in shows the chooser.
-  const stored = await chrome.storage.local.get(["firebaseIdToken"]);
-  if (stored.firebaseIdToken) {
-    try {
-      const accessToken = await getGoogleAccessToken(false);
-      if (accessToken && chrome.identity?.removeCachedAuthToken) {
-        await new Promise<void>((resolve) =>
-          chrome.identity.removeCachedAuthToken({ token: accessToken }, () => resolve()),
-        );
-      }
-    } catch {
-      /* ignore */
-    }
-  }
+  // Bridge-flow sign-out: just drop the cached Firebase ID token and let the
+  // user re-run the bridge next time. There's no chrome.identity-cached
+  // access token to revoke since launchWebAuthFlow doesn't cache one.
   await chrome.storage.local.remove([
     "firebaseIdToken",
     "firebaseUid",
