@@ -1,0 +1,69 @@
+{
+  "manifest_version": 3,
+  "name": "HireTuner — AI Resume Optimizer",
+  "version": "1.0.0",
+  "description": "Tune your resume to every job posting. Analyze ATS compatibility, match job descriptions, scan keywords, and generate bullet points right from any job site.",
+
+  "permissions": [
+    "storage",
+    "scripting",
+    "activeTab",
+    "tabs",
+    "alarms",
+    "identity"
+  ],
+
+  "host_permissions": [
+    "https://hiretuner.com/*",
+    "https://*.hiretuner.com/*",
+    "https://*.googleapis.com/*",
+    "https://*.firebaseio.com/*",
+    "https://identitytoolkit.googleapis.com/*",
+    "https://securetoken.googleapis.com/*",
+    "http://localhost:3000/*",
+    "http://localhost:3055/*"
+  ],
+
+  "oauth2": {
+    "client_id": "REPLACE_WITH_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+    "scopes": [
+      "openid",
+      "email",
+      "profile",
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile"
+    ]
+  },
+
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  },
+
+  "background": {
+    "service_worker": "src/background/service-worker.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.linkedin.com/*",
+        "https://www.indeed.com/*",
+        "https://www.glassdoor.com/*",
+        "https://www.monster.com/*",
+        "https://www.dice.com/*",
+        "https://careers.google.com/*",
+        "https://careers.microsoft.com/*"
+      ],
+      "js": ["src/content/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "HireTuner"
+  },
+
+  "options_page": "src/options/options.html"
+}

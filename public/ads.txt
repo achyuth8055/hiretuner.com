@@ -1,0 +1,3 @@
+# Google AdSense authorized sellers (ads.txt)
+# Format: <domain>, <publisher id>, <relationship>, <certification authority id>
+google.com, pub-7738496464135357, DIRECT, f08c47fec0942fa0

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HireTuner</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="popup-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>HireTuner</h1>
+            <button id="settingsBtn" class="icon-btn" title="Settings">⚙️</button>
+        </div>
+
+        <!-- Auth bar -->
+        <div id="authBar" class="auth-bar">
+            <div id="authSignedOut" class="auth-state">
+                <span class="auth-text">Sign in to use your Starter plan quota.</span>
+                <button id="signInBtn" class="btn btn-primary">Sign in with Google</button>
+            </div>
+            <div id="authSignedIn" class="auth-state" style="display: none;">
+                <span id="authUserLabel" class="auth-text"></span>
+                <button id="signOutBtn" class="btn btn-secondary">Sign out</button>
+            </div>
+            <div id="authError" class="error-message" style="display: none;"></div>
+        </div>
+
+        <!-- Main Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="analyze">Analyze</button>
+            <button class="tab-btn" data-tab="extract">Extract</button>
+            <button class="tab-btn" data-tab="history">History</button>
+        </div>
+
+        <!-- Analyze Tab -->
+        <div id="analyze" class="tab-content active">
+            <div class="section">
+                <label>Resume Text</label>
+                <textarea id="resumeInput" placeholder="Paste your resume here..."></textarea>
+                <button id="loadResumeBtn" class="btn btn-secondary">Load Stored Resume</button>
+                <button id="saveResumeBtn" class="btn btn-secondary">Save Resume</button>
+            </div>
+
+            <div class="section">
+                <label>Job Description</label>
+                <textarea id="jobDescInput" placeholder="Paste job description here..."></textarea>
+                <button id="extractJobBtn" class="btn btn-secondary">Extract from Page</button>
+            </div>
+
+            <div class="section">
+                <label>Analysis Type</label>
+                <select id="analysisType">
+                    <option value="ats-score">ATS Score</option>
+                    <option value="resume-match">Resume Match</option>
+                    <option value="keyword-scan">Keyword Scan</option>
+                    <option value="bullet-generator">Generate Bullets</option>
+                    <option value="interview-questions">Interview Questions</option>
+                </select>
+            </div>
+
+            <button id="analyzeBtn" class="btn btn-primary">Analyze</button>
+
+            <div id="loadingSpinner" class="spinner" style="display: none;">
+                <div class="spinner-circle"></div>
+                <p>Analyzing...</p>
+            </div>
+
+            <div id="resultContainer" class="result-container" style="display: none;">
+                <h3>Results</h3>
+                <div id="resultContent"></div>
+                <button id="copyResultBtn" class="btn btn-secondary">Copy Result</button>
+            </div>
+
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+        </div>
+
+        <!-- Extract Tab -->
+        <div id="extract" class="tab-content">
+            <div class="section">
+                <h3>Extract Job Description</h3>
+                <p>Click the button below to extract the job description from the current page.</p>
+                <button id="extractJobPageBtn" class="btn btn-primary">Extract from Current Page</button>
+                <pre id="extractedJob" style="display: none; background: #f5f5f5; padding: 10px; border-radius: 4px; max-height: 200px; overflow: auto;"></pre>
+            </div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="history" class="tab-content">
+            <div class="section">
+                <h3>Analysis History</h3>
+                <div id="historyList" style="max-height: 300px; overflow: auto;"></div>
+                <button id="clearHistoryBtn" class="btn btn-danger">Clear History</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

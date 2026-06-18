@@ -1,0 +1,2449 @@
+# Final Product Requirements Document
+
+# RoleFit Resume: AI Resume Tailoring, ATS Tools, Salary Tools, and Job Application Tracker
+
+## 1. Product Overview
+
+### Product Name
+
+**RoleFit Resume**
+
+### Product Type
+
+AI-powered job search SaaS platform for resume tailoring, resume scoring, keyword scanning, salary estimation, and application tracking.
+
+### Product Summary
+
+RoleFit Resume helps job seekers improve and tailor their resumes for specific job descriptions. Users can upload one master resume, paste a job description, analyze their resume match score, identify missing keywords, generate a tailored ATS-friendly resume, edit it, download it as PDF, and track the application in a dashboard.
+
+In addition to the logged-in paid resume tailoring workflow, RoleFit also includes public SEO-focused tools such as ATS Resume Score Checker, Resume Match Checker, Resume Keyword Scanner, Job Description Keyword Extractor, Salary Estimator, Resume Bullet Generator, Resume Summary Generator, Interview Question Generator, and Job Application Tracker resources.
+
+The product should feel like a professional career productivity platform, not a generic AI writing tool.
+
+---
+
+## 2. Product Vision
+
+RoleFit Resume should become an affordable job search workspace for people who are actively applying to jobs.
+
+The product should help users answer these questions:
+
+1. Is my resume strong enough?
+2. Does my resume match this job description?
+3. What keywords am I missing?
+4. How can I tailor my resume without lying?
+5. What salary can I expect for this role and experience level?
+6. Which resume version did I use for each company?
+7. How can I apply faster without rewriting my resume every time?
+
+---
+
+## 3. Core Product Promise
+
+**Upload once. Paste any job description. Download a tailored resume in minutes.**
+
+Extended promise:
+
+**RoleFit helps job seekers tailor resumes to job descriptions, check ATS-style resume scores, scan keywords, estimate salary ranges, and track applications from one workspace.**
+
+---
+
+## 4. Main Differentiator
+
+Most AI resume tools feel like generic text generators. RoleFit should be different because it combines:
+
+1. Resume tailoring
+2. Estimated ATS-style scoring
+3. Keyword gap analysis
+4. Safe AI tailoring guardrails
+5. Resume editor and PDF export
+6. Application tracking
+7. Public SEO tools
+8. Salary estimation tools
+9. Role-specific career pages
+
+The strongest differentiator is the **Safe Tailoring System**.
+
+RoleFit must not blindly add fake skills, fake experience, fake certifications, or exaggerated claims. If a job description includes a skill that is not found in the user’s master resume, the system must flag it and ask the user to confirm before adding it.
+
+---
+
+## 5. Target Users
+
+### Primary Target Users
+
+1. Active job seekers applying to multiple jobs per month
+2. Software developers
+3. Data analysts
+4. Business analysts
+5. QA engineers
+6. DevOps engineers
+7. Data engineers
+8. New graduates
+9. Entry-level job seekers
+10. International candidates applying to US-style jobs
+
+### User Characteristics
+
+The ideal user:
+
+* Applies to 5 to 30 jobs per month.
+* Uses one resume for many roles.
+* Wants job-specific resume versions.
+* Wants to save time.
+* Wants affordable help.
+* Wants to improve ATS keyword alignment.
+* Wants to avoid fake resume content.
+* Wants to track companies and resume versions.
+* May not fully understand ATS systems.
+* May be unsure how to position skills for higher-paying roles.
+
+---
+
+## 6. Product Positioning
+
+### Short Positioning
+
+RoleFit Resume is an affordable AI resume tailoring tool and job search workspace that helps users customize resumes for job descriptions, check resume match score, scan keywords, estimate salary, and track applications.
+
+### Homepage Positioning
+
+**Tailor your resume to any job description in minutes.**
+
+Upload your master resume, paste a job description, and generate an ATS-friendly tailored resume with keyword gap analysis, estimated resume match score, safe AI suggestions, and application tracking.
+
+### What RoleFit Is
+
+* AI resume tailoring tool
+* ATS-style resume score checker
+* Resume match checker
+* Resume keyword scanner
+* Job description keyword extractor
+* Salary estimator
+* Tailored resume generator
+* Job application tracker
+* Resume version manager
+* Career utility platform
+
+### What RoleFit Is Not
+
+* Not a guaranteed interview tool
+* Not a fake resume generator
+* Not a job board
+* Not an auto-apply bot
+* Not a human resume writing agency
+* Not a replacement for recruiter judgment
+* Not a salary guarantee tool
+
+---
+
+## 7. Business Model
+
+## 7.1 Free Plan
+
+Purpose: Bring users into the product and show value before asking them to pay.
+
+Includes:
+
+* 1 master resume upload
+* 2 job description scans
+* 1 tailored resume preview
+* ATS score preview
+* Resume match score preview
+* Keyword gap preview
+* Public tool access with limited results
+* No full PDF download, or optional watermarked PDF
+
+## 7.2 Starter Plan
+
+Price: **$4.99/month**
+
+Includes:
+
+* 1 master resume profile
+* 20 job description scans per month
+* 10 tailored resumes per month
+* PDF downloads
+* Plain text copy
+* Simple resume editor
+* Application tracker
+* 30-day version history
+* Safe Tailoring checks
+* Full keyword gap analysis
+* Full ATS score breakdown
+* Full resume match breakdown
+
+## 7.3 Future Plus Plan
+
+Potential price: **$9.99/month**
+
+Future features:
+
+* 50 tailored resumes per month
+* Multiple master resumes
+* DOCX export
+* Multiple resume templates
+* Cover letter generator
+* Recruiter message generator
+* Interview prep
+* Advanced application analytics
+* Chrome extension
+* Job URL import
+* Role-specific recommendations
+
+---
+
+## 8. Product Areas
+
+RoleFit has two major product areas.
+
+## 8.1 Logged-In SaaS Application
+
+Core paid product:
+
+1. Resume upload
+2. Master resume profile
+3. Job description analysis
+4. Resume match score
+5. Keyword gap analysis
+6. Safe tailored resume generation
+7. Resume editor
+8. PDF export
+9. Application tracker
+10. Account and usage dashboard
+
+## 8.2 Public SEO Tools
+
+Traffic acquisition and conversion tools:
+
+1. ATS Resume Score Checker
+2. Resume Match Checker
+3. Resume Keyword Scanner
+4. Job Description Keyword Extractor
+5. Salary Estimator
+6. Resume Bullet Point Generator
+7. Resume Summary Generator
+8. Interview Question Generator
+9. Job Application Tracker public page
+10. Role-specific salary pages
+11. Role-specific resume pages
+
+---
+
+## 9. MVP Goals
+
+The MVP should validate whether users will pay $4.99/month for affordable resume tailoring and application tracking.
+
+### Primary Goals
+
+1. Help users tailor resumes quickly.
+2. Show a clear before and after match score improvement.
+3. Build trust through Safe Tailoring.
+4. Convert free users at high-intent moments.
+5. Create SEO traffic through public tools.
+6. Save every tailored resume as an application record.
+7. Make the product feel useful within the first session.
+
+### MVP Non-Goals
+
+The MVP should not include:
+
+* Auto-apply
+* Job scraping
+* LinkedIn import
+* Chrome extension
+* Full job board
+* Multiple resume templates
+* DOCX export
+* Mobile app
+* Team accounts
+* Resume marketplace
+* Human resume review
+* Complex career coaching chat
+
+---
+
+## 10. Success Metrics
+
+### Activation Metrics
+
+* Visitor to signup conversion rate
+* Signup to resume upload rate
+* Resume upload to JD scan rate
+* JD scan to tailored preview rate
+* Tailored preview to editor rate
+* Editor to upgrade rate
+
+### Conversion Metrics
+
+* Free to paid conversion rate
+* Upgrade rate at PDF download
+* Upgrade rate after free scan limit
+* Starter plan monthly recurring revenue
+* Checkout completion rate
+
+### Product Usage Metrics
+
+* JD scans per user
+* Tailored resumes per user
+* ATS checks per user
+* Resume match checks per user
+* Salary estimator searches per user
+* Applications tracked per user
+* PDF downloads per user
+* Average score improvement
+
+### Retention Metrics
+
+* 7-day return rate
+* 30-day paid retention
+* Number of users who create 3 or more resumes
+* Number of users who track 3 or more applications
+* Monthly churn rate
+
+### SEO Metrics
+
+* Organic visits
+* Public tool conversion rate
+* Tool page signup rate
+* Ranking keywords
+* Click-through rate from search
+* Role-specific page traffic
+* Salary page traffic
+
+### Quality Metrics
+
+* Resume parse success rate
+* JD parse success rate
+* PDF export success rate
+* AI suggestion acceptance rate
+* User edits after generation
+* Unsupported keyword confirmation rate
+
+---
+
+## 11. Core User Journeys
+
+## 11.1 First-Time Visitor from SEO Tool
+
+Example: User searches “ATS resume score checker.”
+
+1. User lands on ATS Resume Score Checker page.
+2. User uploads resume or pastes resume text.
+3. Tool shows partial score and top issues.
+4. User sees CTA: “Tailor this resume to a job description.”
+5. User creates free account.
+6. Resume becomes master profile.
+7. User pastes job description.
+8. User sees full match score and keyword gap.
+9. User generates tailored preview.
+10. User upgrades to download PDF.
+
+## 11.2 First-Time Visitor from Homepage
+
+1. User visits homepage.
+2. User clicks “Try 2 Free Resume Matches.”
+3. User creates account.
+4. User uploads resume.
+5. System parses resume.
+6. User reviews master profile.
+7. User pastes JD.
+8. User receives match score and keyword gaps.
+9. User generates tailored resume preview.
+10. User upgrades to download PDF.
+
+## 11.3 Paid User Tailoring Resume
+
+1. User logs in.
+2. User clicks “Tailor New Resume.”
+3. User pastes job description.
+4. System analyzes JD.
+5. User sees original resume match score.
+6. User sees keyword gap analysis.
+7. User clicks “Generate Tailored Resume.”
+8. User reviews Safe Tailoring changes.
+9. User edits resume.
+10. User downloads PDF.
+11. Application is saved to dashboard.
+
+## 11.4 User Uses Salary Estimator
+
+1. User opens Salary Estimator.
+2. User enters job title, years of experience, location, skills, and work mode.
+3. System shows salary range.
+4. System suggests skills that may increase market value.
+5. User clicks “Tailor Resume for This Role.”
+6. User is guided into resume tailoring workflow.
+
+## 11.5 User Tracks Applications
+
+1. User opens dashboard.
+2. User views application table.
+3. User sees company, role, status, score improvement, resume version, and date.
+4. User updates status.
+5. User opens application details.
+6. User downloads resume or adds notes.
+
+---
+
+## 12. Logged-In Application Requirements
+
+## 12.1 Authentication
+
+### Requirements
+
+Users must be able to:
+
+* Sign up with email and password
+* Log in
+* Log out
+* Reset password
+* Optionally continue with Google
+
+### Signup Fields
+
+* Name
+* Email
+* Password
+
+### Acceptance Criteria
+
+* User can create an account.
+* User can log in successfully.
+* User can access dashboard after login.
+* User cannot access protected app pages without authentication.
+* Password reset works.
+
+---
+
+## 12.2 Subscription and Usage Limits
+
+### Requirements
+
+System must support Free and Starter plans.
+
+### Free Plan Limits
+
+* 1 master resume
+* 2 JD scans
+* 1 tailored preview
+* Limited public tool results
+* No full PDF download
+
+### Starter Plan Limits
+
+* 1 master resume
+* 20 JD scans per month
+* 10 tailored resumes per month
+* PDF download enabled
+* Full keyword gap enabled
+* Full score breakdown enabled
+* 30-day version history
+
+### Usage Events to Track
+
+* Resume upload
+* JD scan
+* Tailored resume generation
+* PDF download
+* ATS score check
+* Resume match check
+* Salary estimate
+* Public tool usage
+
+### Upgrade Triggers
+
+Show upgrade prompt when:
+
+* Free user tries to download PDF
+* Free user reaches JD scan limit
+* Free user tries to view full keyword gap
+* Free user tries to generate more than 1 tailored preview
+* Paid user reaches monthly usage limit
+
+### Acceptance Criteria
+
+* Usage count updates accurately.
+* Free users are blocked at correct limits.
+* Paid users can access Starter features.
+* Monthly usage resets correctly.
+* Stripe subscription status syncs with app access.
+
+---
+
+## 12.3 Resume Upload
+
+### Requirements
+
+Users can upload one master resume.
+
+Supported formats:
+
+* PDF
+* DOCX
+
+### Upload States
+
+* Empty
+* File selected
+* Uploading
+* Parsing
+* Success
+* Error
+
+### Error Messages
+
+Show clear messages for:
+
+* Unsupported file type
+* File too large
+* Empty file
+* Parsing failed
+* Server error
+
+### Acceptance Criteria
+
+* User can upload PDF or DOCX.
+* System extracts text.
+* System creates structured master profile.
+* User can retry upload after failure.
+* User can replace master resume.
+
+---
+
+## 12.4 Master Resume Profile
+
+### Purpose
+
+The master profile is the source of truth for all tailored resumes.
+
+### Sections
+
+1. Contact information
+2. Professional summary
+3. Skills
+4. Work experience
+5. Projects
+6. Education
+7. Certifications
+8. Links
+
+### Contact Fields
+
+* Full name
+* Email
+* Phone
+* Location
+* LinkedIn
+* GitHub
+* Portfolio
+
+### Experience Fields
+
+* Job title
+* Company
+* Location
+* Start date
+* End date
+* Current role checkbox
+* Bullet points
+
+### Skills Categories
+
+* Programming languages
+* Frameworks
+* Databases
+* Cloud platforms
+* Tools
+* Business skills
+* Soft skills
+
+### User Actions
+
+Users can:
+
+* Review parsed data
+* Edit fields
+* Add skills
+* Delete skills
+* Add experience
+* Edit bullets
+* Add projects
+* Add certifications
+* Save master profile
+
+### Acceptance Criteria
+
+* User can edit all parsed sections.
+* Tailoring uses saved profile.
+* User can update master profile later.
+* User can delete resume data.
+
+---
+
+## 12.5 Job Description Input
+
+### Fields
+
+* Job title, optional
+* Company name, optional
+* Job URL, optional
+* Job description text, required
+
+### Placeholder
+
+“Paste the full job description here, including responsibilities, required skills, preferred qualifications, tools, technologies, and company details.”
+
+### Acceptance Criteria
+
+* Empty JD cannot be submitted.
+* Long JD is accepted.
+* User can edit JD before analysis.
+* JD is stored for application record.
+
+---
+
+## 12.6 JD Analysis
+
+### Output
+
+The system should extract:
+
+* Job title
+* Company name
+* Role category
+* Experience level
+* Required skills
+* Preferred skills
+* Responsibilities
+* Tools and technologies
+* Soft skills
+* Important keywords
+* Seniority indicators
+* Work mode
+* Location
+* Salary mentioned, if available
+
+### Example
+
+Role detected: Backend Java Developer
+Experience level: Mid-level
+Required skills: Java, Spring Boot, REST APIs, SQL, AWS
+Preferred skills: Docker, Microservices, CI/CD
+Responsibilities: Build APIs, optimize backend systems, collaborate with product teams
+
+### Acceptance Criteria
+
+* JD analysis displays before resume generation.
+* Keywords are grouped clearly.
+* User can generate tailored resume from analysis.
+* User can return and edit JD.
+
+---
+
+## 12.7 Resume Match Score
+
+### Purpose
+
+Show how closely the resume aligns with a job description.
+
+### Score Label
+
+Always label as:
+
+**Estimated resume match score**
+
+### Score Inputs
+
+* Required skills match
+* Preferred skills match
+* Responsibility match
+* Job title relevance
+* Experience relevance
+* Keyword coverage
+* Formatting completeness
+* Section completeness
+
+### Output
+
+* Original resume match score
+* Tailored resume match score
+* Score improvement
+* Score breakdown
+
+### Example
+
+Original resume match: 58%
+Tailored resume match: 82%
+Score lift: +24%
+
+### Required Disclaimer
+
+“This is an estimated match score based on resume and job description alignment. It does not guarantee interviews or recruiter responses.”
+
+### Acceptance Criteria
+
+* Score appears after JD analysis.
+* Score breakdown is visible.
+* Score updates after tailoring.
+* Disclaimer is visible.
+
+---
+
+## 12.8 Keyword Gap Analysis
+
+### Keyword Statuses
+
+1. Found and used
+2. Found but weak
+3. Missing
+4. Needs confirmation
+5. Not recommended to add
+
+### Example Table
+
+| Keyword     | Status             | Reason                              |
+| ----------- | ------------------ | ----------------------------------- |
+| Java        | Found and used     | Found in skills and work experience |
+| Spring Boot | Found and used     | Found in project section            |
+| AWS         | Found but weak     | Mentioned once in project           |
+| Docker      | Needs confirmation | Not found in master profile         |
+| Kubernetes  | Not recommended    | No evidence found                   |
+
+### Acceptance Criteria
+
+* User can see keyword status.
+* Unsupported skills are not automatically added.
+* User can confirm missing skills.
+* Confirmed skills can be added to resume.
+
+---
+
+## 12.9 Safe Tailoring System
+
+### Purpose
+
+Prevent false or unsupported resume claims.
+
+### AI Must Not
+
+* Invent companies
+* Invent degrees
+* Invent job titles
+* Invent dates
+* Invent certifications
+* Invent years of experience
+* Add unsupported tools as real experience
+* Guarantee interviews
+* Claim certainty about ATS ranking
+
+### AI Can
+
+* Reword existing experience
+* Reorder sections
+* Emphasize relevant skills
+* Improve clarity
+* Improve keyword alignment
+* Suggest missing skills
+* Ask users to confirm experience
+
+### Change Labels
+
+Every major AI change should be labeled:
+
+1. Found and used
+2. Reworded from existing experience
+3. Needs confirmation
+4. Not added because no proof was found
+
+### Confirmation Modal
+
+Title:
+“Confirm this skill before adding”
+
+Message:
+“Docker was found in the job description but not in your master resume. Only add it if you have real experience.”
+
+Buttons:
+
+* “I have experience, add it”
+* “Do not add”
+
+### Acceptance Criteria
+
+* Unsupported skills are flagged.
+* User confirmation is required before adding missing skills.
+* User can reject additions.
+* Change log explains what was changed and why.
+
+---
+
+## 12.10 Tailored Resume Generation
+
+### Tailoring Scope
+
+The system may tailor:
+
+* Professional summary
+* Skills order
+* Skill grouping
+* Experience bullet wording
+* Experience bullet order
+* Project order
+* Project descriptions
+* Resume title
+* Relevant keywords
+
+### Resume Output
+
+Tailored resume should include:
+
+* Contact information
+* Professional summary
+* Skills
+* Work experience
+* Projects, if available
+* Education
+* Certifications, if available
+
+### Output Quality
+
+The resume should be:
+
+* ATS-friendly
+* Clear
+* Honest
+* Concise
+* Role-specific
+* Based on master profile
+* Editable before export
+
+### Acceptance Criteria
+
+* User can generate tailored resume.
+* Resume uses master profile data.
+* Resume uses JD analysis.
+* Unsupported skills are handled safely.
+* User can edit before export.
+
+---
+
+## 12.11 Resume Editor
+
+### MVP Editor Type
+
+Simple structured editor with live preview.
+
+### Recommended Layout
+
+* Left: section navigator
+* Middle: editable resume content
+* Right: live preview and keyword coverage
+
+### Features
+
+Users can:
+
+* Edit summary
+* Edit skills
+* Edit experience bullets
+* Edit projects
+* Save version
+* Regenerate section
+* Accept change
+* Reject change
+* Copy plain text
+* Download PDF if paid
+
+### Required Note
+
+“Review your resume before downloading. You are always in control of the final content.”
+
+### Acceptance Criteria
+
+* User can edit generated content.
+* User can save changes.
+* User can preview resume.
+* User can download PDF if paid.
+* User can return later to edit saved version.
+
+---
+
+## 12.12 PDF Export
+
+### MVP Export Formats
+
+* PDF download
+* Plain text copy
+
+### Future Export Formats
+
+* DOCX
+* LaTeX
+* Multiple templates
+
+### MVP PDF Template
+
+Use one clean ATS-friendly template:
+
+* One-column layout
+* Clear section headings
+* Simple typography
+* No complex tables
+* No heavy graphics
+* Proper spacing
+* Easy to parse by application portals
+
+### Acceptance Criteria
+
+* Paid user can download PDF.
+* Free user sees upgrade prompt.
+* PDF matches preview closely.
+* PDF includes final edited content.
+
+---
+
+## 12.13 Application Tracker
+
+### Purpose
+
+Save each tailored resume as an application record.
+
+### Application Fields
+
+* Company name
+* Job title
+* Job URL
+* Job description
+* Status
+* Original match score
+* Tailored match score
+* Score improvement
+* Resume version
+* Date created
+* Date applied
+* Notes
+
+### Statuses
+
+* Saved
+* Applied
+* Interview
+* Rejected
+* Offer
+
+### Actions
+
+* View details
+* Edit resume
+* Download PDF
+* Duplicate
+* Delete
+* Update status
+
+### Acceptance Criteria
+
+* Application record is created after tailored resume generation.
+* User can update status.
+* User can view previous resume.
+* User can delete application.
+* User can download saved resume if paid.
+
+---
+
+## 12.14 Dashboard
+
+### Purpose
+
+The dashboard is the job search workspace.
+
+### Sections
+
+1. Usage cards
+2. Quick action button
+3. Recent applications
+4. Master resume status
+5. Missing skills insight
+6. Recent public tool checks, optional
+
+### Usage Cards
+
+* JD scans used
+* Tailored resumes used
+* Average score improvement
+* Applications tracked
+
+### Example
+
+JD scans: 6 of 20
+Tailored resumes: 4 of 10
+Average score lift: +22%
+Applications tracked: 8
+
+### Empty State
+
+Title:
+“No applications yet”
+
+Message:
+“Paste your first job description and generate a tailored resume in minutes.”
+
+CTA:
+“Tailor Your First Resume”
+
+---
+
+## 13. Public SEO Tools Requirements
+
+## 13.1 Global Public Tool Page Structure
+
+Every public tool page should include:
+
+1. SEO hero
+2. Interactive tool card
+3. Example input
+4. Example output
+5. Partial free result
+6. Signup or upgrade CTA
+7. Educational content
+8. Related tools
+9. FAQ
+10. Final CTA to tailor resume
+
+### Conversion Rules
+
+Show free users:
+
+* High-level score
+* Top 3 findings
+* Top 3 recommendations
+
+Require signup for:
+
+* Full breakdown
+* Saving results
+* Tailored resume generation
+* Downloadable report
+* PDF export
+* Application tracking
+
+---
+
+## 13.2 ATS Resume Score Checker
+
+### URL
+
+`/ats-resume-score-checker`
+
+### Purpose
+
+Allow users to upload or paste a resume and receive an estimated ATS-style score.
+
+### Inputs
+
+* Upload PDF/DOCX
+* Paste resume text
+* Optional target role
+
+### Output
+
+* Estimated ATS score
+* Formatting score
+* Section completeness score
+* Skills clarity score
+* Experience readability score
+* Keyword strength score
+* Top issues
+* Top recommendations
+
+### Example Result
+
+Estimated ATS Score: 72/100
+
+Breakdown:
+
+* Formatting: 86
+* Section completeness: 78
+* Skills clarity: 69
+* Experience readability: 74
+* Keyword strength: 62
+
+Top issues:
+
+* Skills section is not grouped clearly
+* Work experience bullets are too generic
+* Target role keywords are weak
+
+### CTA
+
+“Tailor This Resume to a Job Description”
+
+### Disclaimer
+
+“This is an estimated ATS-style score. No tool can guarantee how every employer ATS will rank a resume.”
+
+---
+
+## 13.3 Resume Match Checker
+
+### URL
+
+`/resume-match-checker`
+
+### Purpose
+
+Compare a resume against a specific job description.
+
+### Inputs
+
+* Resume upload or resume text
+* Job description text
+
+### Output
+
+* Estimated resume match score
+* Required skills found
+* Required skills missing
+* Preferred skills found
+* Preferred skills missing
+* Keyword overlap
+* Responsibility match
+* Suggested improvements
+
+### Example Result
+
+Resume Match Score: 58%
+
+Breakdown:
+
+* Required skills match: 61%
+* Preferred skills match: 34%
+* Responsibilities match: 70%
+* Keyword coverage: 55%
+
+Found keywords:
+
+* Java
+* SQL
+* REST APIs
+* Agile
+
+Missing keywords:
+
+* Spring Boot
+* AWS
+* Docker
+* CI/CD
+
+### CTA
+
+“Generate Tailored Resume”
+
+---
+
+## 13.4 Resume Keyword Scanner
+
+### URL
+
+`/resume-keyword-scanner`
+
+### Purpose
+
+Find skills, tools, and role-specific keywords inside a resume.
+
+### Inputs
+
+* Resume upload or resume text
+* Target role dropdown
+
+### Target Role Options
+
+* Software Engineer
+* Java Developer
+* Data Analyst
+* Business Analyst
+* QA Engineer
+* DevOps Engineer
+* Data Engineer
+* Product Manager
+
+### Output
+
+* Detected technical skills
+* Detected soft skills
+* Detected tools
+* Missing common keywords
+* Weak keyword areas
+* Suggested keyword placement
+
+### CTA
+
+“Compare Against a Job Description”
+
+---
+
+## 13.5 Job Description Keyword Extractor
+
+### URL
+
+`/job-description-keyword-extractor`
+
+### Purpose
+
+Extract important skills, responsibilities, and ATS keywords from a job description.
+
+### Input
+
+* Job description text
+
+### Output
+
+* Role detected
+* Required skills
+* Preferred skills
+* Tools and technologies
+* Responsibilities
+* Soft skills
+* Seniority level
+* Keyword priority
+
+### CTA
+
+“Compare My Resume Against This JD”
+
+---
+
+## 13.6 Salary Estimator
+
+### URL
+
+`/salary-estimator`
+
+### Purpose
+
+Estimate salary range by role, experience, location, skills, and work mode.
+
+### Inputs
+
+* Job title
+* Years of experience
+* Location
+* Skills
+* Work mode: remote, hybrid, onsite
+* Industry, optional
+
+### Output
+
+* Estimated salary range
+* Low estimate
+* Median estimate
+* High estimate
+* Factors that may increase salary
+* Skills that may improve market positioning
+* Suggested resume keywords for higher-paying roles
+
+### Example
+
+Role: Java Developer
+Experience: 3 years
+Location: Dallas, Texas
+
+Estimated range:
+
+* Low: $82,000
+* Median: $104,000
+* High: $128,000
+
+Factors that may increase salary:
+
+* Spring Boot
+* AWS
+* Microservices
+* Cloud deployment
+* Distributed systems
+
+### CTA
+
+“Tailor Resume for Java Developer Roles”
+
+### Disclaimer
+
+“Salary estimates are directional and may vary by company, market, location, benefits, and negotiation.”
+
+---
+
+## 13.7 Resume Bullet Point Generator
+
+### URL
+
+`/resume-bullet-point-generator`
+
+### Purpose
+
+Rewrite weak resume bullets into stronger, role-specific bullets.
+
+### Inputs
+
+* Job title
+* Existing bullet point
+* Tools used
+* Impact or metric, optional
+* Target role, optional
+
+### Output
+
+* 3 rewritten bullet options
+* Strong action verbs
+* Keyword improvements
+* Metric suggestion
+* Unsupported claim warning if needed
+
+### Example Input
+
+“Worked on backend APIs.”
+
+### Example Output
+
+“Developed REST APIs using Java and Spring Boot to support backend services and improve data access for internal applications.”
+
+### CTA
+
+“Add to My Master Resume”
+
+---
+
+## 13.8 Resume Summary Generator
+
+### URL
+
+`/resume-summary-generator`
+
+### Purpose
+
+Generate professional resume summaries for target roles.
+
+### Inputs
+
+* Target role
+* Years of experience
+* Top skills
+* Industry
+* Job description, optional
+
+### Output
+
+* Conservative summary
+* Balanced summary
+* Keyword-rich summary
+* Short ATS-friendly summary
+
+### CTA
+
+“Create My Master Resume Profile”
+
+---
+
+## 13.9 Interview Question Generator
+
+### URL
+
+`/interview-question-generator`
+
+### Purpose
+
+Generate likely interview questions from a job description.
+
+### Inputs
+
+* Job description
+* Role
+* Experience level
+
+### Output
+
+* Technical questions
+* Behavioral questions
+* Role-specific questions
+* Skills to review
+* Resume-based questions
+
+### CTA
+
+“Tailor Resume for This Job”
+
+---
+
+## 13.10 Job Application Tracker Public Page
+
+### URL
+
+`/job-application-tracker`
+
+### Purpose
+
+Public SEO page explaining how to track job applications and resume versions.
+
+### Page Content
+
+Show tracker table with:
+
+* Company
+* Job title
+* Date applied
+* Status
+* Resume version
+* Match score
+* Notes
+* Follow-up date
+
+### CTA
+
+“Start Tracking Applications”
+
+---
+
+## 14. Salary Pages and Role-Specific SEO Pages
+
+## 14.1 Role-Specific Salary Pages
+
+### URL Pattern
+
+`/salary/[role]`
+
+Examples:
+
+* `/salary/software-engineer`
+* `/salary/java-developer`
+* `/salary/data-analyst`
+* `/salary/business-analyst`
+* `/salary/qa-engineer`
+* `/salary/backend-engineer`
+* `/salary/devops-engineer`
+* `/salary/data-engineer`
+
+### Page Template
+
+Each page should include:
+
+1. SEO hero
+2. Salary estimator pre-filled with role
+3. Salary by experience level
+4. Salary by location
+5. Skills that may increase salary
+6. Resume keywords for the role
+7. Related job titles
+8. FAQ
+9. CTA to tailor resume for the role
+
+### Example: Java Developer Salary Guide
+
+Hero:
+“Java Developer Salary Guide”
+
+Subheadline:
+“Explore estimated Java Developer salary ranges by experience level, location, and skills.”
+
+Skills:
+
+* Java
+* Spring Boot
+* REST APIs
+* SQL
+* AWS
+* Microservices
+* Docker
+* CI/CD
+
+CTA:
+“Tailor My Resume for Java Developer Jobs”
+
+---
+
+## 14.2 Role-Specific Resume Pages
+
+### URL Pattern
+
+`/resume/[role]`
+
+Examples:
+
+* `/resume/software-engineer`
+* `/resume/java-developer`
+* `/resume/data-analyst`
+* `/resume/business-analyst`
+* `/resume/qa-engineer`
+* `/resume/devops-engineer`
+* `/resume/data-engineer`
+* `/resume/product-manager`
+
+### Page Template
+
+Each page should include:
+
+1. SEO hero
+2. Resume match checker for that role
+3. Important resume keywords
+4. Example JD keyword analysis
+5. Before and after resume summary
+6. Common missing skills
+7. Example bullet improvements
+8. FAQ
+9. CTA to generate tailored resume
+
+### Example: Java Developer Resume Page
+
+Hero:
+“Java Developer Resume Tailoring Tool”
+
+Subheadline:
+“Tailor your Java Developer resume to job descriptions with keyword gap analysis, estimated match score, and safe AI suggestions.”
+
+Common keywords:
+
+* Java
+* Spring Boot
+* REST APIs
+* SQL
+* Microservices
+* AWS
+* Docker
+* Git
+* Agile
+* CI/CD
+
+Before summary:
+“Software developer with experience working on web applications.”
+
+After summary:
+“Java Developer with experience building backend applications using Java, Spring Boot, REST APIs, and SQL, with hands-on project experience in API development and database-driven applications.”
+
+CTA:
+“Generate My Java Developer Resume”
+
+---
+
+## 15. Website Pages
+
+## 15.1 Main Public Pages
+
+1. Homepage
+2. Pricing
+3. FAQ
+4. How It Works
+5. Features
+6. Login
+7. Signup
+
+## 15.2 Resume Tool Pages
+
+1. ATS Resume Score Checker
+2. Resume Match Checker
+3. Resume Keyword Scanner
+4. Job Description Keyword Extractor
+5. Resume Bullet Point Generator
+6. Resume Summary Generator
+7. Interview Question Generator
+8. Job Application Tracker
+
+## 15.3 Salary Pages
+
+1. Salary Estimator
+2. Software Engineer Salary
+3. Java Developer Salary
+4. Data Analyst Salary
+5. Business Analyst Salary
+6. QA Engineer Salary
+7. Backend Engineer Salary
+8. DevOps Engineer Salary
+9. Data Engineer Salary
+
+## 15.4 Role Resume Pages
+
+1. Software Engineer Resume
+2. Java Developer Resume
+3. Data Analyst Resume
+4. Business Analyst Resume
+5. QA Engineer Resume
+6. DevOps Engineer Resume
+7. Data Engineer Resume
+8. Product Manager Resume
+
+## 15.5 Logged-In App Pages
+
+1. Dashboard
+2. Resume upload onboarding
+3. Master profile review
+4. Tailor resume
+5. JD analysis result
+6. Resume editor
+7. Application detail
+8. Applications list
+9. Account and usage
+10. Billing settings
+
+---
+
+## 16. Homepage Requirements
+
+### Purpose
+
+Convert visitors into free users and paid users.
+
+### Required Sections
+
+1. Navbar
+2. Hero
+3. Problem section
+4. Product mockup
+5. How it works
+6. Feature cards
+7. Free tools section
+8. Before and after example
+9. Safe Tailoring section
+10. Example use cases
+11. Dashboard preview
+12. Salary tools preview
+13. Pricing
+14. FAQ
+15. Final CTA
+16. Footer
+
+### Hero Copy
+
+Headline:
+“Tailor your resume to any job description in minutes.”
+
+Subheadline:
+“Upload your master resume, paste a job description, and generate an ATS-friendly tailored resume with keyword gap analysis, estimated match score, safe AI suggestions, and application tracking.”
+
+Primary CTA:
+“Try 2 Free Resume Matches”
+
+Secondary CTA:
+“Use Free ATS Checker”
+
+Trust Line:
+“No fake experience added. Edit before download. Built for active job seekers.”
+
+---
+
+## 17. Navigation Requirements
+
+### Main Navbar
+
+* Product
+* Free Tools
+* Salary Guides
+* How It Works
+* Pricing
+* FAQ
+* Login
+* Try Free
+
+### Free Tools Dropdown
+
+* ATS Resume Score Checker
+* Resume Match Checker
+* Resume Keyword Scanner
+* JD Keyword Extractor
+* Salary Estimator
+* Resume Bullet Generator
+* Resume Summary Generator
+* Interview Question Generator
+* Job Application Tracker
+
+### Salary Guides Dropdown
+
+* Software Engineer Salary
+* Java Developer Salary
+* Data Analyst Salary
+* Business Analyst Salary
+* QA Engineer Salary
+* Backend Engineer Salary
+* DevOps Engineer Salary
+* Data Engineer Salary
+
+### Footer Columns
+
+Product:
+
+* Features
+* Pricing
+* How It Works
+* FAQ
+
+Free Tools:
+
+* ATS Resume Score Checker
+* Resume Match Checker
+* Resume Keyword Scanner
+* JD Keyword Extractor
+* Salary Estimator
+* Resume Bullet Generator
+* Interview Question Generator
+* Job Application Tracker
+
+Salary Guides:
+
+* Software Engineer Salary
+* Java Developer Salary
+* Data Analyst Salary
+* Business Analyst Salary
+* QA Engineer Salary
+* DevOps Engineer Salary
+
+Company:
+
+* Privacy
+* Terms
+* Contact
+
+---
+
+## 18. SEO Requirements
+
+### Primary SEO Keywords
+
+* AI resume tailoring tool
+* tailor resume to job description
+* ATS resume checker
+* ATS resume score checker
+* resume keyword scanner
+* resume match checker
+* resume match score
+* tailored resume generator
+* job application tracker
+* salary estimator
+* software engineer salary
+* Java developer salary
+* data analyst salary
+* ATS-friendly resume
+* resume optimization tool
+
+### Homepage Meta Title
+
+AI Resume Tailoring Tool | Tailor Your Resume to Any Job Description
+
+### Homepage Meta Description
+
+Upload your resume, paste a job description, and generate an ATS-friendly tailored resume with keyword gap analysis, estimated match score, safe AI suggestions, salary tools, and application tracking.
+
+### Tool Page SEO Strategy
+
+Each tool page should have:
+
+* Unique meta title
+* Unique meta description
+* H1 matching search intent
+* Tool above the fold
+* Helpful body content
+* FAQ schema-ready questions
+* Internal links to related tools
+* CTA to signup or tailor resume
+
+### Blog Topics
+
+1. How to Tailor Your Resume to a Job Description
+2. What Is an ATS Resume Score?
+3. How Resume Keyword Scanners Work
+4. How to Make an ATS-Friendly Resume
+5. Why You Should Not Use the Same Resume for Every Job
+6. How to Track Job Applications During Your Search
+7. How to Customize a Software Developer Resume
+8. How to Use AI for Resume Tailoring Without Lying
+9. How Much Do Software Engineers Make With 3 Years Experience?
+10. Which Skills Increase Java Developer Salary?
+
+---
+
+## 19. AI System Requirements
+
+## 19.1 AI Inputs
+
+AI should receive:
+
+* Master resume profile
+* Original resume text
+* Job description
+* JD analysis
+* User confirmed skills
+* Tailoring mode
+* Existing resume version, if editing
+
+## 19.2 AI Outputs
+
+AI should return structured JSON.
+
+Suggested structure:
+
+* tailored_summary
+* skills_section
+* experience_bullets
+* projects
+* education
+* certifications
+* keyword_coverage
+* unsupported_keywords
+* change_log
+* score_explanation
+* warnings
+
+## 19.3 Tailoring Mode
+
+MVP should use one default mode:
+
+### Balanced Tailoring
+
+* Reword existing experience
+* Reorder content
+* Emphasize relevant skills
+* Improve summary
+* Flag unsupported skills
+* Avoid unsupported claims
+
+Future modes:
+
+* Conservative
+* Balanced
+* Aggressive with strict confirmation
+
+## 19.4 AI Guardrails
+
+The AI must:
+
+* Use only user-provided resume data
+* Flag missing skills
+* Explain major changes
+* Avoid fake claims
+* Avoid guarantee language
+* Ask for confirmation when needed
+
+---
+
+## 20. Salary Estimation Requirements
+
+### Important Note
+
+Salary estimation may require external salary data in future. For MVP, if reliable salary data is not integrated, label outputs as directional estimates and avoid presenting them as guaranteed market data.
+
+### Inputs
+
+* Role
+* Years of experience
+* Location
+* Skills
+* Work mode
+* Industry
+
+### Outputs
+
+* Low salary estimate
+* Median salary estimate
+* High salary estimate
+* Salary influencing factors
+* Skills that may increase market value
+* Suggested resume positioning
+* CTA to tailor resume
+
+### Disclaimer
+
+“Salary estimates are directional and may vary by company, location, industry, market conditions, benefits, and negotiation.”
+
+---
+
+## 21. Data Model
+
+## 21.1 User
+
+Fields:
+
+* id
+* name
+* email
+* password_hash
+* auth_provider
+* created_at
+* updated_at
+
+## 21.2 Subscription
+
+Fields:
+
+* id
+* user_id
+* plan_type
+* status
+* stripe_customer_id
+* stripe_subscription_id
+* current_period_start
+* current_period_end
+* created_at
+* updated_at
+
+## 21.3 Usage
+
+Fields:
+
+* id
+* user_id
+* month
+* jd_scans_used
+* tailored_resumes_used
+* pdf_downloads_used
+* ats_checks_used
+* resume_match_checks_used
+* salary_estimates_used
+* created_at
+* updated_at
+
+## 21.4 MasterResume
+
+Fields:
+
+* id
+* user_id
+* original_file_url
+* parsed_text
+* structured_profile_json
+* active
+* created_at
+* updated_at
+
+## 21.5 JobDescription
+
+Fields:
+
+* id
+* user_id
+* company_name
+* job_title
+* job_url
+* raw_text
+* analysis_json
+* created_at
+
+## 21.6 TailoredResume
+
+Fields:
+
+* id
+* user_id
+* master_resume_id
+* job_description_id
+* resume_json
+* resume_text
+* original_score
+* tailored_score
+* score_breakdown_json
+* keyword_coverage_json
+* change_log_json
+* version_number
+* pdf_url
+* created_at
+* updated_at
+
+## 21.7 Application
+
+Fields:
+
+* id
+* user_id
+* tailored_resume_id
+* company_name
+* job_title
+* job_url
+* status
+* notes
+* date_applied
+* created_at
+* updated_at
+
+## 21.8 PublicToolResult
+
+Fields:
+
+* id
+* user_id, nullable
+* tool_type
+* input_hash
+* input_json
+* result_json
+* created_at
+
+## 21.9 SalaryEstimate
+
+Fields:
+
+* id
+* user_id, nullable
+* role
+* years_experience
+* location
+* skills_json
+* work_mode
+* industry
+* result_json
+* created_at
+
+---
+
+## 22. Technical Requirements
+
+### Recommended Frontend
+
+* Next.js
+* TypeScript
+* Tailwind CSS
+* shadcn/ui or similar component system
+
+### Recommended Backend
+
+* Next.js API routes or FastAPI
+* PostgreSQL
+* Prisma or Drizzle ORM
+
+### Authentication
+
+* Clerk
+* Supabase Auth
+* NextAuth
+
+### Payments
+
+* Stripe
+
+### Storage
+
+* Supabase Storage
+* AWS S3
+* Cloudflare R2
+
+### AI
+
+* OpenAI API or compatible provider
+
+### File Parsing
+
+* PDF parser
+* DOCX parser
+
+### PDF Generation
+
+* HTML to PDF
+* React PDF
+* Puppeteer-based export
+
+### Analytics
+
+* PostHog, Plausible, or similar
+* Track activation, conversion, usage, and SEO tool interactions
+
+---
+
+## 23. Security and Privacy Requirements
+
+Resume data is sensitive and must be protected.
+
+### Requirements
+
+* Users can only access their own data.
+* Resume files are not publicly accessible.
+* API routes validate user ownership.
+* Payment webhooks are verified.
+* Users can delete resume data.
+* Users can delete tailored resumes.
+* Users can delete account.
+* User data is not sold.
+* Resume data is not used for model training unless explicitly disclosed and opted in.
+
+### Privacy Copy
+
+“We respect your resume data. You can delete your files and generated resumes anytime.”
+
+---
+
+## 24. UI and Design Requirements
+
+### Product Design Quality
+
+The design must look like a production-ready SaaS platform, not a generic AI demo.
+
+### Visual Direction
+
+* Clean SaaS dashboard
+* Professional typography
+* Strong information hierarchy
+* Subtle borders
+* Smooth rounded cards
+* Clear CTAs
+* Trustworthy colors
+* Responsive mobile layout
+* Dense but readable dashboard screens
+* Real product mockups in landing pages
+
+### Required UI States
+
+* Empty state
+* Loading state
+* Success state
+* Error state
+* Upgrade state
+* Usage limit state
+* Delete confirmation state
+* Skill confirmation state
+
+### Important UX Principles
+
+1. Show value before payment.
+2. Make the first resume tailoring fast.
+3. Let users edit before download.
+4. Explain unsupported keywords clearly.
+5. Keep usage limits visible.
+6. Save user progress.
+7. Avoid clutter in the editor.
+8. Use practical examples everywhere.
+
+---
+
+## 25. Reusable Components
+
+Required components:
+
+1. Navbar
+2. Sidebar navigation
+3. Footer
+4. Pricing card
+5. Match score card
+6. ATS score card
+7. Salary estimate card
+8. Keyword chip
+9. Keyword status badge
+10. Resume preview card
+11. Job description textarea
+12. Upload dropzone
+13. Dashboard metric card
+14. Application status badge
+15. Empty state card
+16. Loading skeleton
+17. Upgrade modal
+18. Delete modal
+19. Skill confirmation modal
+20. Usage limit warning
+21. Score improvement badge
+22. Resume change log item
+23. Public tool input card
+24. Public tool result preview
+25. Related tools grid
+
+---
+
+## 26. Launch Scope
+
+## 26.1 Must Have for MVP Launch
+
+Logged-in app:
+
+* Auth
+* Stripe subscription
+* Usage limits
+* Resume upload
+* Resume parsing
+* Master profile review
+* JD input
+* JD analysis
+* Resume match score
+* Keyword gap analysis
+* Safe Tailoring checks
+* Tailored resume generation
+* Resume editor
+* PDF export
+* Dashboard
+* Application tracker
+* Account and usage page
+
+Public tools:
+
+* ATS Resume Score Checker
+* Resume Match Checker
+* Resume Keyword Scanner
+* Job Description Keyword Extractor
+* Salary Estimator
+
+Public pages:
+
+* Homepage
+* Pricing
+* FAQ
+* How It Works
+* Login
+* Signup
+
+## 26.2 Should Have
+
+* Resume Bullet Point Generator
+* Resume Summary Generator
+* Job Application Tracker public page
+* Application detail page
+* Score breakdown
+* Version history
+* Delete resume data
+* Google login
+
+## 26.3 Could Have
+
+* Interview Question Generator
+* Cover Letter Generator
+* Role-specific salary pages
+* Role-specific resume pages
+* Blog content
+* DOCX export
+* Multiple templates
+
+## 26.4 Will Not Have in MVP
+
+* Auto apply
+* Job scraping
+* LinkedIn import
+* Chrome extension
+* Mobile app
+* Team accounts
+* Multiple master resumes
+* Human resume review
+
+---
+
+## 27. Build Phases
+
+## Phase 1: Foundation
+
+* Auth
+* Database
+* User model
+* Stripe integration
+* Plan limits
+* Usage tracking
+* App shell
+* Public website shell
+
+## Phase 2: Resume Profile
+
+* Resume upload
+* PDF parsing
+* DOCX parsing
+* Structured resume profile
+* Master profile editor
+* Resume data deletion
+
+## Phase 3: Public Tools MVP
+
+* ATS Resume Score Checker
+* Resume Match Checker
+* Resume Keyword Scanner
+* Job Description Keyword Extractor
+* Salary Estimator
+* Public tool result previews
+* Signup conversion CTAs
+
+## Phase 4: JD Analysis and Scoring
+
+* JD input
+* JD parser
+* Keyword extraction
+* Resume match score
+* Score breakdown
+* Keyword gap analysis
+
+## Phase 5: Tailored Resume Generation
+
+* AI tailored resume generation
+* Safe Tailoring guardrails
+* Change log
+* Unsupported keyword detection
+* Skill confirmation modal
+
+## Phase 6: Resume Editor and Export
+
+* Structured editor
+* Live preview
+* Save version
+* PDF export
+* Plain text copy
+* Upgrade gating
+
+## Phase 7: Application Tracker
+
+* Applications dashboard
+* Application detail page
+* Status updates
+* Resume version linking
+* Notes
+
+## Phase 8: SEO and Polish
+
+* Pricing page
+* FAQ page
+* How It Works page
+* Role-specific pages
+* Salary pages
+* Error states
+* Loading states
+* Empty states
+* Analytics events
+
+---
+
+## 28. User Stories
+
+### Public Tool User
+
+As a job seeker, I want to check my ATS resume score for free so I can understand whether my resume needs improvement.
+
+### Resume Match User
+
+As a job seeker, I want to compare my resume against a job description so I can see if I am missing important keywords.
+
+### Salary User
+
+As a job seeker, I want to estimate salary by role, experience, and location so I can understand my market value.
+
+### Resume Upload User
+
+As a job seeker, I want to upload my existing resume so I do not need to create a profile from scratch.
+
+### Master Profile User
+
+As a job seeker, I want to edit my master profile so the AI uses accurate information.
+
+### Tailoring User
+
+As a job seeker, I want to generate a tailored resume so I can apply faster.
+
+### Safe Tailoring User
+
+As a job seeker, I want unsupported skills to be flagged so my resume does not include fake claims.
+
+### Editor User
+
+As a job seeker, I want to edit the resume before downloading so I control the final version.
+
+### Paid User
+
+As a paid user, I want to download my tailored resume as PDF so I can submit it to job applications.
+
+### Tracker User
+
+As a job seeker, I want to save every tailored resume to a dashboard so I know which resume I used for each company.
+
+---
+
+## 29. Acceptance Criteria Summary
+
+The MVP is complete when:
+
+1. User can sign up.
+2. User can log in.
+3. User can upload resume.
+4. System can parse resume.
+5. User can edit master profile.
+6. User can use ATS Resume Score Checker.
+7. User can use Resume Match Checker.
+8. User can use Resume Keyword Scanner.
+9. User can use JD Keyword Extractor.
+10. User can use Salary Estimator.
+11. User can paste job description.
+12. System can analyze JD.
+13. System can calculate estimated resume match score.
+14. System can show keyword gaps.
+15. System can generate tailored resume.
+16. System can flag unsupported skills.
+17. User can confirm or reject missing skills.
+18. User can edit tailored resume.
+19. Paid user can download PDF.
+20. Free user sees upgrade prompt.
+21. Tailored resume is saved to application tracker.
+22. User can update application status.
+23. User can view usage limits.
+24. User can manage subscription.
+25. User can delete resume data.
+26. Public tool pages include SEO content and CTAs.
+27. Homepage includes free tools and salary tools sections.
+
+---
+
+## 30. Risks and Mitigations
+
+### Risk 1: Product feels like a ChatGPT wrapper
+
+Mitigation:
+Build real workflows: scoring, keyword analysis, Safe Tailoring, editor, PDF export, tracker, and public tools.
+
+### Risk 2: AI adds fake experience
+
+Mitigation:
+Use Safe Tailoring checks, unsupported keyword flags, confirmation modals, and change logs.
+
+### Risk 3: Salary estimates are inaccurate
+
+Mitigation:
+Clearly label as directional estimates. In future, integrate reliable salary data sources.
+
+### Risk 4: Resume parsing fails
+
+Mitigation:
+Allow manual editing and retry upload.
+
+### Risk 5: Token costs are high
+
+Mitigation:
+Use monthly limits, structured data, caching, and section-level regeneration.
+
+### Risk 6: SEO pages become thin content
+
+Mitigation:
+Each public page must include an actual tool interface, examples, results, educational content, FAQs, and internal links.
+
+### Risk 7: Users do not trust score
+
+Mitigation:
+Label score as estimated, show breakdown, and explain how it is calculated.
+
+### Risk 8: Users do not convert to paid
+
+Mitigation:
+Show strong free preview, then prompt upgrade at PDF download and full analysis moments.
+
+---
+
+## 31. Final MVP Definition
+
+The final MVP of RoleFit Resume should include:
+
+### Public SEO acquisition layer
+
+* ATS Resume Score Checker
+* Resume Match Checker
+* Resume Keyword Scanner
+* Job Description Keyword Extractor
+* Salary Estimator
+
+### Logged-in product layer
+
+* Resume upload
+* Master profile
+* JD analysis
+* Resume match score
+* Keyword gap analysis
+* Safe tailored resume generation
+* Resume editor
+* PDF export
+* Application tracker
+* Usage limits
+* Stripe billing
+
+### Conversion layer
+
+* Free plan
+* Starter plan at $4.99/month
+* Upgrade prompts at PDF download, full analysis, and usage limit moments
+
+The product is successful if users can quickly understand the value, use at least one free tool, create a tailored resume from a JD, and feel that $4.99/month is worth paying to save hours during their job search.

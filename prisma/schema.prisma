@@ -1,0 +1,226 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlanType {
+  free
+  starter
+  plus
+}
+
+enum SubscriptionStatus {
+  active
+  trialing
+  past_due
+  canceled
+  incomplete
+  free
+}
+
+enum AuthProvider {
+  email
+  google
+}
+
+enum ApplicationStatus {
+  Saved
+  Applied
+  Interview
+  Rejected
+  Offer
+}
+
+model User {
+  id                  String               @id @default(cuid())
+  name                String
+  email               String               @unique
+  passwordHash        String               @map("password_hash")
+  authProvider        AuthProvider         @default(email) @map("auth_provider")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  subscriptions       Subscription[]
+  usages              Usage[]
+  masterResumes       MasterResume[]
+  jobDescriptions     JobDescription[]
+  tailoredResumes     TailoredResume[]
+  applications        Application[]
+  publicToolResults   PublicToolResult[]
+  salaryEstimates     SalaryEstimate[]
+  sessions            Session[]
+  passwordResetTokens PasswordResetToken[]
+
+  @@map("users")
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @map("user_id")
+  planType             PlanType           @default(free) @map("plan_type")
+  status               SubscriptionStatus @default(free)
+  stripeCustomerId     String?            @map("stripe_customer_id")
+  stripeSubscriptionId String?            @map("stripe_subscription_id")
+  currentPeriodStart   DateTime?          @map("current_period_start")
+  currentPeriodEnd     DateTime?          @map("current_period_end")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("subscriptions")
+}
+
+model Usage {
+  id                     String   @id @default(cuid())
+  userId                 String   @map("user_id")
+  month                  String
+  jdScansUsed            Int      @default(0) @map("jd_scans_used")
+  tailoredResumesUsed    Int      @default(0) @map("tailored_resumes_used")
+  pdfDownloadsUsed       Int      @default(0) @map("pdf_downloads_used")
+  atsChecksUsed          Int      @default(0) @map("ats_checks_used")
+  resumeMatchChecksUsed  Int      @default(0) @map("resume_match_checks_used")
+  salaryEstimatesUsed    Int      @default(0) @map("salary_estimates_used")
+  publicToolUsageUsed    Int      @default(0) @map("public_tool_usage_used")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month])
+  @@map("usage")
+}
+
+model MasterResume {
+  id                String           @id @default(cuid())
+  userId            String           @map("user_id")
+  originalFileUrl   String?          @map("original_file_url")
+  originalFileName  String?          @map("original_file_name")
+  parsedText        String           @map("parsed_text")
+  structuredProfile Json             @map("structured_profile_json")
+  active            Boolean          @default(true)
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tailoredResumes   TailoredResume[]
+
+  @@index([userId, active])
+  @@map("master_resumes")
+}
+
+model JobDescription {
+  id              String           @id @default(cuid())
+  userId          String           @map("user_id")
+  companyName     String           @default("") @map("company_name")
+  jobTitle        String           @default("") @map("job_title")
+  jobUrl          String           @default("") @map("job_url")
+  rawText         String           @map("raw_text")
+  analysis        Json             @map("analysis_json")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tailoredResumes TailoredResume[]
+
+  @@index([userId, createdAt])
+  @@map("job_descriptions")
+}
+
+model TailoredResume {
+  id               String         @id @default(cuid())
+  userId           String         @map("user_id")
+  masterResumeId   String         @map("master_resume_id")
+  jobDescriptionId String         @map("job_description_id")
+  resumeJson       Json           @map("resume_json")
+  resumeText       String         @map("resume_text")
+  originalScore    Int            @map("original_score")
+  tailoredScore    Int            @map("tailored_score")
+  scoreBreakdown   Json           @map("score_breakdown_json")
+  keywordCoverage  Json           @map("keyword_coverage_json")
+  changeLog        Json           @map("change_log_json")
+  versionNumber    Int            @map("version_number")
+  pdfUrl           String?        @map("pdf_url")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  masterResume     MasterResume   @relation(fields: [masterResumeId], references: [id], onDelete: Cascade)
+  jobDescription   JobDescription @relation(fields: [jobDescriptionId], references: [id], onDelete: Cascade)
+  applications     Application[]
+
+  @@index([userId, createdAt])
+  @@map("tailored_resumes")
+}
+
+model Application {
+  id               String            @id @default(cuid())
+  userId           String            @map("user_id")
+  tailoredResumeId String            @map("tailored_resume_id")
+  companyName      String            @default("") @map("company_name")
+  jobTitle         String            @default("") @map("job_title")
+  jobUrl           String            @default("") @map("job_url")
+  status           ApplicationStatus @default(Saved)
+  notes            String            @default("")
+  dateApplied      DateTime?         @map("date_applied")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tailoredResume   TailoredResume    @relation(fields: [tailoredResumeId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@map("applications")
+}
+
+model PublicToolResult {
+  id         String   @id @default(cuid())
+  userId     String?  @map("user_id")
+  toolType   String   @map("tool_type")
+  inputHash  String   @map("input_hash")
+  inputJson  Json     @map("input_json")
+  resultJson Json     @map("result_json")
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([toolType, inputHash])
+  @@map("public_tool_results")
+}
+
+model SalaryEstimate {
+  id              String   @id @default(cuid())
+  userId          String?  @map("user_id")
+  role            String
+  yearsExperience String   @map("years_experience")
+  location        String
+  skills          Json     @map("skills_json")
+  workMode        String   @map("work_mode")
+  industry        String   @default("")
+  resultJson      Json     @map("result_json")
+  createdAt       DateTime @default(now()) @map("created_at")
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([role, location])
+  @@map("salary_estimates")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("sessions")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("password_reset_tokens")
+}
