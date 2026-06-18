@@ -252,20 +252,62 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
             <h3 className="font-label-uppercase text-label-uppercase text-primary">Master Resume</h3>
             <span className="text-xs text-on-surface-variant">{uploadState.replace("_", " ")}</span>
           </div>
-          <div className="border-2 border-dashed border-outline-variant/50 rounded-lg p-stack-md bg-surface">
+          <label
+            htmlFor="master-resume-file"
+            onDragOver={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+            }}
+            onDrop={(event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              const dropped = event.dataTransfer.files?.[0]
+              if (!dropped) return
+              const ok = /\.(pdf|docx|txt)$/i.test(dropped.name)
+              if (!ok) {
+                setError("Only PDF, DOCX, or TXT files are supported.")
+                setUploadState("error")
+                return
+              }
+              setFile(dropped)
+              setUploadState("selected")
+              setError("")
+            }}
+            className="block cursor-pointer border-2 border-dashed border-outline-variant/50 hover:border-secondary rounded-lg p-stack-md bg-surface text-center transition-colors"
+          >
             <input
+              id="master-resume-file"
               type="file"
               accept=".pdf,.docx,.txt"
               onChange={(event) => {
-                setFile(event.target.files?.[0] ?? null)
-                setUploadState(event.target.files?.[0] ? "selected" : "empty")
+                const picked = event.target.files?.[0] ?? null
+                setFile(picked)
+                setUploadState(picked ? "selected" : "empty")
+                if (picked) setError("")
               }}
-              className="w-full text-body-sm"
+              className="sr-only"
             />
-            <p className="text-xs text-on-surface-variant mt-2">
-              Supports PDF, DOCX, and TXT up to 5MB. You can replace your active master resume anytime.
-            </p>
-          </div>
+            <div className="flex flex-col items-center gap-1">
+              <span className="material-symbols-outlined text-secondary text-3xl">upload_file</span>
+              {file ? (
+                <>
+                  <span className="font-medium text-primary text-body-sm">{file.name}</span>
+                  <span className="text-xs text-on-surface-variant">
+                    {(file.size / 1024).toFixed(1)} KB — click to replace, or drop a new file
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="font-medium text-primary text-body-sm">
+                    Drop your resume here, or click to browse
+                  </span>
+                  <span className="text-xs text-on-surface-variant">
+                    Supports PDF, DOCX, and TXT up to 5MB
+                  </span>
+                </>
+              )}
+            </div>
+          </label>
           {masterResume ? (
             <div className="mt-4 rounded bg-surface-bright border border-outline-variant/20 p-3 text-body-sm">
               <div className="font-medium text-primary">{masterResume.structuredProfile.contact.fullName || "Parsed resume"}</div>
@@ -278,8 +320,14 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
               Empty state: upload your master resume before generating tailored resumes.
             </div>
           )}
-          <Button className="w-full mt-4" disabled={loading === "upload"} type="submit">
-            {loading === "upload" ? "Parsing..." : masterResume ? "Replace Master Resume" : "Upload Resume"}
+          <Button className="w-full mt-4" disabled={loading === "upload" || !file} type="submit">
+            {loading === "upload"
+              ? "Parsing..."
+              : !file
+                ? "Choose a resume to upload"
+                : masterResume
+                  ? "Replace Master Resume"
+                  : "Upload Resume"}
           </Button>
         </form>
 
