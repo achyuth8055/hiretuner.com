@@ -14,7 +14,6 @@ AUTH_SECRET=Ozrg_pLeY50LRWrPVhgxWck0CnfTSAr4t6u4-eyQenQkE_8MrFAS2kmjsYryjrZV
 
 NODE_ENV=production
 
-# --- Firebase Web (public, bundled in browser) ---
 NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyBHdWzqTPJnuhgmn7YQNNNEVFuwA3SrGgg
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=hiretuner.firebaseapp.com
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=hiretuner
@@ -23,7 +22,7 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=202383803048
 NEXT_PUBLIC_FIREBASE_APP_ID=1:202383803048:web:072740ec6de57d6f64789d
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-TQQNLW6KNC
 
-# --- Firebase Admin (server, service account) ---
+
 FIREBASE_PROJECT_ID=hiretuner
 FIREBASE_CLIENT_EMAIL=firebase-adminsdk-fbsvc@hiretuner.iam.gserviceaccount.com
 FIREBASE_STORAGE_BUCKET=hiretuner.firebasestorage.app

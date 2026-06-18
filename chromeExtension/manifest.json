@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "HireTuner — AI Resume Optimizer",
   "version": "1.0.0",
-  "description": "Tune your resume to every job posting. Analyze ATS compatibility, match job descriptions, scan keywords, and generate bullet points right from any job site.",
+  "description": "Tune your resume to every job — instant ATS score, keyword gap scan, and AI bullet suggestions on any job posting.",
 
   "permissions": [
     "storage",
@@ -62,7 +62,20 @@
 
   "action": {
     "default_popup": "src/popup/popup.html",
-    "default_title": "HireTuner"
+    "default_title": "HireTuner",
+    "default_icon": {
+      "16": "public/icon-16.png",
+      "32": "public/icon-32.png",
+      "48": "public/icon-48.png",
+      "128": "public/icon-128.png"
+    }
+  },
+
+  "icons": {
+    "16": "public/icon-16.png",
+    "32": "public/icon-32.png",
+    "48": "public/icon-48.png",
+    "128": "public/icon-128.png"
   },
 
   "options_page": "src/options/options.html"
