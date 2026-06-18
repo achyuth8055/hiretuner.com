@@ -16,40 +16,86 @@ function getCurrentJobDescription(): string | null {
   const hostname = window.location.hostname;
 
   if (hostname.includes('linkedin.com')) {
-    // LinkedIn job description
-    const descElement = document.querySelector('[data-test-id="jobs-details__main-content"]') ||
-                       document.querySelector('.show-more-less-html__markup');
+    // LinkedIn changed its DOM in 2025 — current selectors live under
+    // div.jobs-description__content / div.jobs-box__html-content. The old
+    // [data-test-id="jobs-details__main-content"] no longer matches.
+    const descElement =
+      document.querySelector('div.jobs-description__content') ||
+      document.querySelector('div.jobs-box__html-content') ||
+      document.querySelector('[class*="jobs-description"]') ||
+      document.querySelector('.show-more-less-html__markup');
     return descElement?.textContent?.trim() || null;
   }
 
   if (hostname.includes('indeed.com')) {
-    // Indeed job description
-    const descElement = document.querySelector('#jobsearch-ViewjobPaneWrapper') ||
-                       document.querySelector('.jobsearch-jobDescriptionText');
+    const descElement =
+      document.querySelector('#jobDescriptionText') ||
+      document.querySelector('.jobsearch-jobDescriptionText') ||
+      document.querySelector('#jobsearch-ViewjobPaneWrapper');
     return descElement?.textContent?.trim() || null;
   }
 
   if (hostname.includes('glassdoor.com')) {
-    // Glassdoor job description
-    const descElement = document.querySelector('[data-test="jobDescription"]') ||
-                       document.querySelector('.JobDetails_jobDescription__uW_LA');
+    const descElement =
+      document.querySelector('[data-test="jobDescription"]') ||
+      document.querySelector('[class*="JobDetails_jobDescription"]') ||
+      document.querySelector('.JobDetails_jobDescription__uW_LA');
     return descElement?.textContent?.trim() || null;
   }
 
-  // Generic fallback
-  const main = document.querySelector('main') || document.querySelector('.job-description');
-  return main?.textContent?.trim() || null;
+  // ---- Generic fallbacks ----
+
+  // Most modern ATS-driven boards (Greenhouse, Lever, Workable, etc.) emit a
+  // JobPosting JSON-LD block with the description in HTML form. This works
+  // even when the visual DOM changes.
+  const ldNodes = document.querySelectorAll('script[type="application/ld+json"]');
+  for (const node of Array.from(ldNodes)) {
+    try {
+      const parsed = JSON.parse(node.textContent || 'null');
+      const list = Array.isArray(parsed) ? parsed : [parsed];
+      for (const entry of list) {
+        if (entry && (entry['@type'] === 'JobPosting' || (Array.isArray(entry['@type']) && entry['@type'].includes('JobPosting')))) {
+          const html = entry.description;
+          if (typeof html === 'string' && html.trim().length > 100) {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            return tmp.textContent?.trim() || null;
+          }
+        }
+      }
+    } catch {
+      /* skip malformed JSON-LD */
+    }
+  }
+
+  // Last-resort: longest content block on the page.
+  const candidates = Array.from(document.querySelectorAll('main, article, [class*="description"], [class*="job"], section'));
+  let best: { el: Element; len: number } | null = null;
+  for (const el of candidates) {
+    const text = (el.textContent || '').trim();
+    if (text.length > 600 && text.length < 12000 && /(responsib|requirement|qualif|experience)/i.test(text)) {
+      if (!best || text.length > best.len) best = { el, len: text.length };
+    }
+  }
+  return best?.el.textContent?.trim() || null;
 }
 
 function getJobTitle(): string | null {
-  const titleElement = document.querySelector('h1') ||
-                      document.querySelector('[data-test-id="top-card-title"]');
+  const titleElement =
+    document.querySelector('h1.t-24') ||
+    document.querySelector('h1.job-details-jobs-unified-top-card__job-title') ||
+    document.querySelector('h1') ||
+    document.querySelector('[data-test-id="top-card-title"]');
   return titleElement?.textContent?.trim() || null;
 }
 
 function getCompanyName(): string | null {
-  const companyElement = document.querySelector('[data-test-id="top-card-company-name"]') ||
-                        document.querySelector('.company-name');
+  const companyElement =
+    document.querySelector('.job-details-jobs-unified-top-card__company-name a') ||
+    document.querySelector('.job-details-jobs-unified-top-card__company-name') ||
+    document.querySelector('[data-test-id="top-card-company-name"]') ||
+    document.querySelector('[class*="topcard__org-name"]') ||
+    document.querySelector('.company-name');
   return companyElement?.textContent?.trim() || null;
 }
 
