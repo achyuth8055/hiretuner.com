@@ -71,7 +71,7 @@ export function PricingCTA({ interval, className, children }: PricingCTAProps) {
       if (!checkoutResponse.ok || !json.ok || !json.data?.checkoutUrl) {
         if (json.error?.code === "stripe_not_configured") {
           throw new Error(
-            "Payments aren't configured yet. Add your Stripe keys to .env to enable checkout.",
+            "Payments are temporarily unavailable. Please try again later or contact support@hiretuner.com.",
           )
         }
         throw new Error(json.error?.message ?? "Checkout is not available right now.")

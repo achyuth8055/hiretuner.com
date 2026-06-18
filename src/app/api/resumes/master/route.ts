@@ -29,7 +29,19 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  const formData = await request.formData()
+  // Reject non-multipart bodies up front. request.formData() throws a 500
+  // when the body is JSON or otherwise not multipart/form-data; catch it and
+  // return a clean 422 so non-form callers see a usable error.
+  let formData: FormData
+  try {
+    formData = await request.formData()
+  } catch {
+    return jsonError(
+      "Upload a PDF, DOCX, or TXT resume file using multipart/form-data.",
+      422,
+      "validation_error",
+    )
+  }
   const file = formData.get("file")
 
   if (!(file instanceof File)) {

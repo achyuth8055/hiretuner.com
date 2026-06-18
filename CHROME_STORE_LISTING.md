@@ -1,27 +1,27 @@
 # Chrome Web Store Listing — HireTuner
 
-The Chrome Web Store dashboard cannot be automated by extensions (browser-level
-restriction), so this is the ready-to-paste field-by-field guide. Open the
-dashboard tab you already have (`chrome.google.com/webstore/devconsole/...`)
-and fill in:
+The Web Store dev console blocks extension scripting, so this is the
+ready-to-paste field-by-field guide. Open the listing in the dashboard and
+work top-to-bottom.
+
+> ✅ **Updated zip ready:** `outputs/hiretuner-extension.zip` (56 KB).
+> Manifest has been trimmed: removed `scripting` + `tabs` (unused),
+> removed `http://localhost:*` host permissions (review-blocking),
+> removed the placeholder `oauth2` block (we use a website bridge now).
 
 ---
 
-## Package upload
+## 1. Package upload
 
-- Click **"+ New item"** → drag-drop
-  `/Users/achyuth/Documents/Website Ideas/makemyresume/hiretuner-chrome-extension.zip`
-- Chrome will validate the manifest and surface the extension ID (long random
-  string like `abcdefghijklmnop...`). **Copy that ID** — you'll need it twice:
-  1. To create the OAuth Chrome App client (see "OAuth" section below).
-  2. To add it to Firebase Authorized Domains (`chrome-extension://<id>`).
+1. Dashboard → your item → **Package** tab → **Upload new package**.
+2. Drag in `outputs/hiretuner-extension.zip`.
+3. Manifest validates → version stays `1.0.0`.
 
 ---
 
-## Store listing tab
+## 2. Store listing tab
 
-### Single-purpose description (required, ≤132 chars)
-Already baked into `manifest.json` (116 chars — fits the limit):
+### Short description (already in manifest, ≤132 chars, 116 chars actual)
 ```
 Tune your resume to every job — instant ATS score, keyword gap scan, and AI bullet suggestions on any job posting.
 ```
@@ -47,101 +47,119 @@ Your data:
 
 Pricing:
   • Free tier: 5 resume matches per month, basic ATS keyword gap.
-  • Starter: $5.49/mo or $54.99/yr — 100 tailored resumes per month, advanced AI rewriting engine, master resume management, application tracker.
+  • Starter: $5.49/mo or $49.99/yr — 100 tailored resumes per month, advanced AI rewriting engine, master resume management, application tracker.
 
 Read our Privacy Policy: https://hiretuner.com/privacy-policy
 Terms of Service: https://hiretuner.com/terms-of-service
 ```
 
 ### Category
-**Productivity** → **Workflow & Planning** (or simply "Productivity").
+**Productivity**
 
 ### Language
-English (United States).
+English (United States)
 
 ---
 
-## Graphic assets
+## 3. Graphic assets
 
-| Slot | Required size | File |
+| Slot | Size | File |
 |---|---|---|
 | Store icon | 128 × 128 PNG | `chromeExtension/public/icon-128.png` |
-| Small promo tile | 440 × 280 PNG (or skip) | We have a 440×440 square — Chrome will accept it but resize. Use `chromeExtension/public/icon-440.png` and crop if rejected, or skip this slot (only the 128 store icon is *strictly* required for unlisted/private; promo is encouraged for public). |
-| Screenshots | 1280 × 800 or 640 × 400 PNG/JPG, at least 1, up to 5 | TODO — capture three screenshots: (1) popup on a LinkedIn job page showing the JD extracted, (2) Analyze tab with a real ATS score result, (3) Options page showing Firebase settings filled in. |
-
-To capture screenshots: open the popup on a LinkedIn job, hit ⇧⌘4 then space, click the popup. Repeat for the other two views.
+| Small promo tile (optional) | 440 × 280 PNG | Skip unless you have one cropped to exactly 440 × 280. The square 440 will be rejected. |
+| Screenshots (1–5, required ≥1) | 1280 × 800 PNG (no alpha) | Already in `outputs/` from earlier — re-upload if review reset them. |
 
 ---
 
-## Privacy practices tab
+## 4. Privacy practices tab  ← **THIS IS WHERE REVIEW USUALLY FAILS**
 
-This is the section reviewers care about most. Answer truthfully:
+### Single purpose (paste verbatim)
+```
+Extract the job description from the user's currently-open job-site tab and run an AI-powered ATS / keyword-gap / resume-match analysis against the user's stored resume via the HireTuner web service.
+```
 
-- **Single purpose**: "Tune the user's resume to a job description by extracting the JD from any job site and running ATS/keyword/match analyses via the HireTuner web service."
-- **Permission justifications**:
-  - `storage` — Save user's resume and analysis history locally in `chrome.storage`.
-  - `activeTab` / `tabs` — Read the job description from the user's currently-open tab when they click Extract.
-  - `scripting` — Inject the keyword highlighter into the active page.
-  - `alarms` — Weekly cleanup of stored analysis history older than 7 days.
-  - `identity` — Authenticate the user with Google via `chrome.identity.getAuthToken` to unlock paid-plan quotas.
-  - Host permission `https://hiretuner.com/*` — Send analysis requests to the HireTuner backend.
-  - Host permissions for job sites — Read the JD from LinkedIn, Indeed, Glassdoor, Monster, Dice when the user clicks Extract.
-- **Data collected**:
-  - "Personal communications" → NO
-  - "Authentication information" → YES (Firebase ID tokens, exchanged with our server for a session).
-  - "Personally identifiable information" → YES (the user's email + display name from Google when they sign in).
-  - "Web history" → NO (we don't track browsing — we only read the active tab when the user clicks Extract).
-  - "User activity" → NO.
-  - "Website content" → YES (we read the job description text from the active job-site tab when the user clicks Extract).
-- **Remote code use**: NO (all code is bundled in the package; no eval/remote scripts).
-- **Privacy policy URL**: `https://hiretuner.com/privacy-policy`
+### Permission justifications (one per declared permission)
 
-Tick the certification at the bottom acknowledging the Chrome Web Store
-Developer Program Policies.
+`storage`
+```
+Save the user's resume text, settings, and last 7 days of analysis history locally in chrome.storage on the user's own device. Nothing is uploaded.
+```
+
+`activeTab`
+```
+When the user clicks "Extract job description" in the popup, read the visible text of the currently-active job posting tab to send to the HireTuner backend for analysis. Only runs on user click, only on the active tab.
+```
+
+`alarms`
+```
+A single weekly chrome.alarms timer ('cleanup') prunes locally-cached analysis results older than 7 days from chrome.storage.local. No network or user-data side effects.
+```
+
+`identity`
+```
+Used to sign the user into HireTuner via chrome.identity.launchWebAuthFlow, which opens hiretuner.com/extension-auth in a popup, completes Firebase Google sign-in, and returns a Firebase ID token. No long-lived OAuth token is requested or stored.
+```
+
+### Host permission justification
+
+`https://hiretuner.com/*`, `https://*.hiretuner.com/*`
+```
+The extension is a thin client of the HireTuner web app. All analysis requests, session cookies, and the OAuth bridge page live on hiretuner.com.
+```
+
+`https://identitytoolkit.googleapis.com/*`, `https://securetoken.googleapis.com/*`
+```
+Firebase Auth endpoints. The Firebase Web SDK bundled in the extension calls these to verify the user's ID token and refresh it before expiry. Standard, documented Firebase requirement.
+```
+
+### Content-script host matches (LinkedIn, Indeed, Glassdoor, Monster, Dice, careers.google, careers.microsoft)
+```
+Content script reads the job-description DOM on supported job boards so the user can extract the JD with one click from the extension popup. Runs at document_idle, only on the listed sites. Does not read other tabs, does not write to the page, does not exfiltrate browsing history.
+```
+
+### Data collected (toggles)
+
+| Type | Collect? | Why |
+|---|---|---|
+| Personally identifiable information | **Yes** | Email + display name from Google sign-in (Firebase Auth). |
+| Authentication information | **Yes** | Firebase ID token, exchanged with our server for a session. |
+| Personal communications | No | — |
+| Web history | No | We never read the user's browsing history. |
+| User activity | No | — |
+| Website content | **Yes** | Job description text from the active tab, on explicit user click. |
+| Financial info / health / location | No | — |
+
+### Three certifications at the bottom — **tick all three**
+- ✅ I do not sell or transfer user data to third parties outside the approved use cases.
+- ✅ I do not use or transfer user data for purposes unrelated to my item's single purpose.
+- ✅ I do not use or transfer user data to determine creditworthiness or for lending purposes.
+
+### Privacy policy URL
+```
+https://hiretuner.com/privacy-policy
+```
+
+> ⚠️ If `https://hiretuner.com/privacy-policy` returns 404 in a normal browser tab, review will reject the listing. Verify it loads before submitting.
+
+### Remote code
+**No** — all code is bundled. No `eval`, no remote `<script>`, no remote WASM.
 
 ---
 
-## OAuth (critical — sign-in will fail without this)
+## 5. Submit
 
-The current manifest has a placeholder `oauth2.client_id`. Before submission:
-
-1. Open https://console.cloud.google.com → APIs & Services → Credentials.
-2. **Create Credentials → OAuth client ID → Application type = "Chrome App"**.
-3. **Application ID**: paste the extension ID Chrome assigned when you uploaded
-   the zip in step "Package upload" above.
-4. Save → copy the generated `xxxxxx.apps.googleusercontent.com`.
-5. Open `chromeExtension/manifest.json`, replace the placeholder, rebuild
-   (`cd chromeExtension && npm run build`), re-zip:
-   ```
-   cd chromeExtension/dist && zip -r ../../hiretuner-chrome-extension.zip . -x "*.map" -x "*.d.ts*"
-   ```
-6. Back in the Chrome Web Store dashboard, **upload the new zip** to bump the
-   package, then re-submit.
-
-You only need to do this once — the OAuth client is tied to the extension ID,
-which doesn't change when you update the package.
+1. All sidebar dots should be green ⬤.
+2. Click **Submit for review** (top right).
+3. Reviews usually clear in 1–3 business days. The bridge-based auth + tight permission list should sail through.
 
 ---
 
-## Submit
+## Changes vs the previously-rejected submission
 
-Once all required fields are green:
-
-1. Click **"Submit for review"**.
-2. Google typically reviews within 1–3 business days. They may ask follow-up
-   questions if any permission seems excessive — your `tabs` + multiple
-   host permissions are common scrutiny targets, but the justifications above
-   cover the reasoning.
-
----
-
-## Outputs ready in your folder
-
-- `hiretuner-chrome-extension.zip` (148 KB, MV3 — drag into the dashboard).
-- `chromeExtension/public/icon-128.png` — store icon.
-- `chromeExtension/public/icon-440.png` — fallback promo tile (crop to 440×280
-  if Chrome rejects the square aspect).
-
-I left the existing 16/32/48/128 PNGs inside the zip too, so the extension
-shows the new HireTuner brand mark immediately in the browser toolbar and the
-chrome://extensions page.
+| Before | After | Why |
+|---|---|---|
+| `permissions: [storage, scripting, activeTab, tabs, alarms, identity]` | `[storage, activeTab, alarms, identity]` | `scripting` and `tabs` were never actually called — removing them avoids permission-justification rejection. |
+| `host_permissions` included `http://localhost:3000/*` and `http://localhost:3055/*` | Removed | Web Store rejects `http://` hosts in published extensions. |
+| `host_permissions` included `https://*.googleapis.com/*` and `https://*.firebaseio.com/*` (wildcards) | Narrowed to `identitytoolkit.googleapis.com` + `securetoken.googleapis.com` only | Wildcards on googleapis.com are flagged as overbroad; only the two Firebase Auth endpoints are actually called. |
+| Placeholder `oauth2.client_id` block in manifest | Removed | We switched to `chrome.identity.launchWebAuthFlow` + a bridge page on hiretuner.com — no Chrome App OAuth client needed. |
+| Missing `homepage_url`, `author` | Added | Review prefers these fields populated. |

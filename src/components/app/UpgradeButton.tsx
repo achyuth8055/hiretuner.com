@@ -38,7 +38,7 @@ export function UpgradeButton({
       if (!response.ok || !json.ok || !json.data?.checkoutUrl) {
         if (json.error?.code === "stripe_not_configured") {
           throw new Error(
-            "Payments aren't configured yet. Add your Stripe keys to .env to enable checkout.",
+            "Payments are temporarily unavailable. Please try again later or contact support@hiretuner.com.",
           )
         }
         if (response.status === 401) {

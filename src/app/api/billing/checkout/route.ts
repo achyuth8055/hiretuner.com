@@ -19,20 +19,27 @@ export async function POST(request: NextRequest) {
   const interval: BillingInterval = body?.interval === "yearly" ? "yearly" : "monthly"
 
   if (!isStripeConfigured()) {
+    logger.warn("api.billing.checkout", "Stripe is not configured (STRIPE_SECRET_KEY missing)", {
+      userId: context.user.id,
+      interval,
+    })
     return jsonError(
-      "Stripe is not configured. Add STRIPE_SECRET_KEY to enable checkout.",
+      "Payments are temporarily unavailable. Please try again later.",
       501,
       "stripe_not_configured",
-      { placeholderRequired: true, interval },
+      { interval },
     )
   }
 
   const priceId = priceIdForInterval(interval)
   if (!priceId || priceId.includes("replace")) {
+    logger.warn("api.billing.checkout", "Stripe price ID missing", {
+      userId: context.user.id,
+      interval,
+      requiredVar: interval === "yearly" ? "STRIPE_STARTER_YEARLY_PRICE_ID" : "STRIPE_STARTER_PRICE_ID",
+    })
     return jsonError(
-      `Stripe price ID for the ${interval} plan is not set. Add ${
-        interval === "yearly" ? "STRIPE_STARTER_YEARLY_PRICE_ID" : "STRIPE_STARTER_PRICE_ID"
-      } to .env.`,
+      "Payments are temporarily unavailable. Please try again later.",
       501,
       "stripe_price_missing",
       { interval },

@@ -35,6 +35,21 @@ export async function POST(request: NextRequest) {
   const context = requireApiUser(request)
   if (context instanceof Response) return context
 
+  // Validate the request body FIRST so a malformed submission never consumes
+  // the user's tailored-resume quota.
+  const body = await readJson<TailorBody>(request)
+  let jobDescriptionId: string
+  let confirmedSkills: string[]
+  try {
+    jobDescriptionId = requireString("jobDescriptionId", body?.jobDescriptionId, { min: 1, max: 200 })
+    confirmedSkills = optionalStringArray("confirmedSkills", body?.confirmedSkills)
+  } catch (error) {
+    if (error instanceof ValidationFailed) {
+      return jsonError(error.message, 422, "validation_error", error.errors)
+    }
+    throw error
+  }
+
   const usageCheck = assertUsageAvailable(context.user.id, "tailoredResumesUsed", context.plan)
   if (!usageCheck.allowed) {
     logger.warn("api.tailored-resumes", "Monthly tailored-resume limit reached", {
@@ -49,19 +64,6 @@ export async function POST(request: NextRequest) {
       upgradeRequired: context.plan === "free",
       monthlyCap: usageCheck.limit,
     })
-  }
-
-  const body = await readJson<TailorBody>(request)
-  let jobDescriptionId: string
-  let confirmedSkills: string[]
-  try {
-    jobDescriptionId = requireString("jobDescriptionId", body?.jobDescriptionId, { min: 1, max: 200 })
-    confirmedSkills = optionalStringArray("confirmedSkills", body?.confirmedSkills)
-  } catch (error) {
-    if (error instanceof ValidationFailed) {
-      return jsonError(error.message, 422, "validation_error", error.errors)
-    }
-    throw error
   }
 
   const database = readDatabase()

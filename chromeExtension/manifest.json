@@ -3,12 +3,12 @@
   "name": "HireTuner — AI Resume Optimizer",
   "version": "1.0.0",
   "description": "Tune your resume to every job — instant ATS score, keyword gap scan, and AI bullet suggestions on any job posting.",
+  "author": "HireTuner",
+  "homepage_url": "https://hiretuner.com",
 
   "permissions": [
     "storage",
-    "scripting",
     "activeTab",
-    "tabs",
     "alarms",
     "identity"
   ],
@@ -16,12 +16,8 @@
   "host_permissions": [
     "https://hiretuner.com/*",
     "https://*.hiretuner.com/*",
-    "https://*.googleapis.com/*",
-    "https://*.firebaseio.com/*",
     "https://identitytoolkit.googleapis.com/*",
-    "https://securetoken.googleapis.com/*",
-    "http://localhost:3000/*",
-    "http://localhost:3055/*"
+    "https://securetoken.googleapis.com/*"
   ],
 
   "content_security_policy": {

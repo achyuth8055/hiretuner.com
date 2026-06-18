@@ -12,8 +12,11 @@ export async function POST(request: NextRequest) {
   const customerId = context.subscription?.stripeCustomerId
 
   if (!isStripeConfigured()) {
+    logger.warn("api.billing.portal", "Stripe is not configured (STRIPE_SECRET_KEY missing)", {
+      userId: context.user.id,
+    })
     return jsonError(
-      "Stripe is not configured. Add STRIPE_SECRET_KEY to enable billing portal.",
+      "Billing management is temporarily unavailable. Please try again later.",
       501,
       "stripe_not_configured",
     )

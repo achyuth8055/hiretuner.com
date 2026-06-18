@@ -71,7 +71,7 @@ STRIPE_STARTER_YEARLY_PRICE_ID=price_REPLACE_YEARLY
 2. Name: `HireTuner Starter`. Description: "100 tailored resumes / month."
 3. Add a price: **$5.49 / month**, recurring. Save → copy the `price_...` ID into
    `STRIPE_STARTER_PRICE_ID`.
-4. On the same product, add a second price: **$54.99 / year**, recurring. Copy that
+4. On the same product, add a second price: **$49.99 / year**, recurring. Copy that
    `price_...` ID into `STRIPE_STARTER_YEARLY_PRICE_ID`.
 
 **To create the webhook (after deploying):**

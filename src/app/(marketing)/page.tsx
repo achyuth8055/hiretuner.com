@@ -263,7 +263,7 @@ export default function Home() {
               <p className="font-body-base text-body-base text-on-surface-variant">
                 We don&apos;t hallucinate skills you don&apos;t have. HireTuner categorizes every JD keyword and shows you exactly how we handle it. You maintain full control.
               </p>
-              <Link className="text-secondary font-label-uppercase text-label-uppercase mt-4 flex items-center gap-1 hover:underline" href="#">
+              <Link className="text-secondary font-label-uppercase text-label-uppercase mt-4 flex items-center gap-1 hover:underline" href="/privacy-policy">
                 Read our AI Safety Policy <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
               </Link>
             </div>

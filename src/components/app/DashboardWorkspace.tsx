@@ -247,7 +247,7 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-gutter mb-stack-xl">
-        <form onSubmit={uploadResume} className="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-stack-md shadow-sm">
+        <form id="master-resume" onSubmit={uploadResume} className="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-stack-md shadow-sm scroll-mt-24">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-label-uppercase text-label-uppercase text-primary">Master Resume</h3>
             <span className="text-xs text-on-surface-variant">{uploadState.replace("_", " ")}</span>
@@ -331,7 +331,7 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
           </Button>
         </form>
 
-        <form onSubmit={analyzeJob} className="xl:col-span-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-stack-md shadow-sm">
+        <form id="tailor" onSubmit={analyzeJob} className="xl:col-span-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-stack-md shadow-sm scroll-mt-24">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-label-uppercase text-label-uppercase text-primary">Tailor New Resume</h3>
             <span className="text-xs text-on-surface-variant">JD analysis</span>
@@ -383,7 +383,7 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
       )}
 
       <div className="flex flex-col lg:flex-row gap-gutter">
-        <div className="flex-1 bg-surface-container-lowest border border-outline-variant/50 rounded-lg shadow-sm overflow-hidden flex flex-col">
+        <div id="applications" className="flex-1 bg-surface-container-lowest border border-outline-variant/50 rounded-lg shadow-sm overflow-hidden flex flex-col scroll-mt-24">
           <div className="p-stack-md border-b border-outline-variant/30 flex justify-between items-center bg-surface-bright">
             <h3 className="font-label-uppercase text-label-uppercase text-primary">Recent Applications</h3>
             <span className="text-body-sm text-on-surface-variant">{applications.length} total</span>
@@ -460,7 +460,7 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
         </div>
 
         <div className="w-full lg:w-80 flex flex-col gap-gutter">
-          <div className="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-stack-md shadow-sm">
+          <div id="usage" className="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-stack-md shadow-sm scroll-mt-24">
             <h4 className="font-label-uppercase text-label-uppercase text-primary mb-4">Plan Usage</h4>
             <UsageBar label="JD scans" value={usage.jdScansUsed} total={initial.limits.jdScans} />
             <UsageBar label="Tailor credits" value={usage.tailoredResumesUsed} total={initial.limits.tailoredResumes} />

@@ -17,6 +17,16 @@ export async function POST(request: NextRequest) {
   const context = requireApiUser(request)
   if (context instanceof Response) return context
 
+  // Validate the request body FIRST so an empty/malformed submission never
+  // consumes the user's quota. Quota enforcement runs only after we've
+  // confirmed the request would actually do work.
+  const body = await readJson<AnalyzeBody>(request)
+  const rawText = body?.rawText?.trim() ?? ""
+
+  if (rawText.length < 80) {
+    return jsonError("Paste the full job description before analysis.", 422, "validation_error")
+  }
+
   const usageCheck = assertUsageAvailable(context.user.id, "jdScansUsed", context.plan)
   if (!usageCheck.allowed) {
     return jsonError(usageCheck.message, 402, "usage_limit", {
@@ -24,13 +34,6 @@ export async function POST(request: NextRequest) {
       usage: usageCheck.usage.jdScansUsed,
       upgradeRequired: context.plan === "free",
     })
-  }
-
-  const body = await readJson<AnalyzeBody>(request)
-  const rawText = body?.rawText?.trim() ?? ""
-
-  if (rawText.length < 80) {
-    return jsonError("Paste the full job description before analysis.", 422, "validation_error")
   }
 
   const analysis = analyzeJobDescription({

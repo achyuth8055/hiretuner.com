@@ -30,23 +30,23 @@ export default function DashboardLayout({
             <span className="material-symbols-outlined">dashboard</span>
             Dashboard
           </Link>
-          <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg">
+          <Link href="/dashboard#tailor" className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg">
             <span className="material-symbols-outlined">auto_fix_high</span>
             Tailor Resume
           </Link>
-          <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg">
+          <Link href="/dashboard#applications" className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg">
             <span className="material-symbols-outlined">assignment</span>
             Applications
           </Link>
-          <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg">
+          <Link href="/dashboard#master-resume" className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg">
             <span className="material-symbols-outlined">description</span>
             Master Resume
           </Link>
-          <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg">
+          <Link href="/dashboard#usage" className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg">
             <span className="material-symbols-outlined">analytics</span>
             Usage
           </Link>
-          <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg">
+          <Link href="/dashboard/settings" className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg">
             <span className="material-symbols-outlined">settings</span>
             Settings
           </Link>
@@ -54,7 +54,7 @@ export default function DashboardLayout({
 
         {/* Footer Nav */}
         <div className="mt-auto space-y-1 pt-4 border-t border-outline-variant/20">
-          <Link href="#" className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg">
+          <Link href="/contact" className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg">
             <span className="material-symbols-outlined">support</span>
             Help Center
           </Link>
