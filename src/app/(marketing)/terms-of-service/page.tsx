@@ -1,15 +1,17 @@
-import { pageMetadata } from "@/lib/seo"
+import { pageMetadata, JsonLd, breadcrumbLd, webPageLd } from "@/lib/seo"
 
-export const metadata = pageMetadata({
-  title: "Terms of Service",
-  description:
-    "The terms and conditions governing your use of HireTuner, including accounts, subscriptions, billing, advertising, acceptable use, and disclaimers.",
-  path: "/terms-of-service",
-})
+const TITLE = "Terms of Service"
+const DESCRIPTION =
+  "The terms and conditions governing your use of HireTuner, including accounts, subscriptions, billing, advertising, acceptable use, and disclaimers."
+const PATH = "/terms-of-service"
+
+export const metadata = pageMetadata({ title: TITLE, description: DESCRIPTION, path: PATH })
 
 export default function TermsOfService() {
   return (
     <div className="max-w-[800px] mx-auto px-margin-page py-stack-xl">
+      <JsonLd data={breadcrumbLd([{ name: "Terms of Service", path: PATH }])} />
+      <JsonLd data={webPageLd({ name: TITLE, description: DESCRIPTION, path: PATH })} />
       <h1 className="font-display-lg text-display-lg text-primary mb-stack-lg">Terms of Service</h1>
       <div className="prose prose-slate max-w-none text-on-surface">
         <p>Last updated: June 18, 2026</p>

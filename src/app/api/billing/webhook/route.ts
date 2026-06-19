@@ -1,11 +1,56 @@
 import type Stripe from "stripe"
-import { updateDatabase } from "@/lib/database"
+import { readDatabase, updateDatabase } from "@/lib/database"
 import { jsonError, jsonOk } from "@/lib/http"
 import { logger } from "@/lib/logger"
 import { getStripe, isStripeConfigured } from "@/lib/stripe-server"
 import type { BillingInterval, PlanType, SubscriptionStatus } from "@/lib/rolefit-types"
 
 export const runtime = "nodejs"
+
+// Keep at most this many processed-event records to bound storage growth.
+const EVENT_HISTORY_CAP = 500
+
+// Map Stripe priceId → internal plan so we never grant access based on
+// hardcoded assumptions about which price was paid.
+function planForPriceId(priceId: string | undefined): PlanType | null {
+  if (!priceId) return null
+  if (
+    priceId === process.env.STRIPE_STARTER_PRICE_ID ||
+    priceId === process.env.STRIPE_STARTER_YEARLY_PRICE_ID
+  ) {
+    return "starter"
+  }
+  if (
+    priceId === process.env.STRIPE_PRO_PRICE_ID ||
+    priceId === process.env.STRIPE_PRO_YEARLY_PRICE_ID
+  ) {
+    return "pro"
+  }
+  return null
+}
+
+function wasEventProcessed(eventId: string): boolean {
+  const database = readDatabase()
+  return Boolean(database.processedStripeEvents?.some((evt) => evt.id === eventId))
+}
+
+function markEventProcessed(event: Stripe.Event) {
+  updateDatabase((database) => {
+    if (!database.processedStripeEvents) database.processedStripeEvents = []
+    database.processedStripeEvents.push({
+      id: event.id,
+      type: event.type,
+      processedAt: new Date().toISOString(),
+    })
+    // Bounded ring buffer.
+    if (database.processedStripeEvents.length > EVENT_HISTORY_CAP) {
+      database.processedStripeEvents.splice(
+        0,
+        database.processedStripeEvents.length - EVENT_HISTORY_CAP,
+      )
+    }
+  })
+}
 
 export async function POST(request: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
@@ -35,8 +80,19 @@ export async function POST(request: Request) {
     return jsonError("Invalid Stripe webhook signature.", 400, "invalid_signature")
   }
 
+  // Idempotency guard: Stripe retries duplicate events on any non-2xx
+  // response. Without dedup, retries would re-apply subscription updates.
+  if (wasEventProcessed(event.id)) {
+    logger.info("api.billing.webhook", "Skipping duplicate event", {
+      id: event.id,
+      type: event.type,
+    })
+    return jsonOk({ received: true, type: event.type, duplicate: true })
+  }
+
   try {
     await handleStripeEvent(event, stripe)
+    markEventProcessed(event)
   } catch (error) {
     logger.error("api.billing.webhook", "Failed to process Stripe event", {
       type: event.type,
@@ -87,20 +143,22 @@ async function handleStripeEvent(event: Stripe.Event, stripe: Stripe) {
 
     case "customer.subscription.deleted": {
       const subscription = event.data.object as Stripe.Subscription
-      const userId = subscription.metadata?.userId
       const customerId =
         typeof subscription.customer === "string"
           ? subscription.customer
           : subscription.customer.id
 
       updateDatabase((database) => {
-        const record = database.subscriptions.find((item) =>
-          userId ? item.userId === userId : item.stripeCustomerId === customerId,
+        const record = database.subscriptions.find(
+          (item) => item.stripeCustomerId === customerId,
         )
         if (!record) return
         record.planType = "free"
         record.status = "canceled"
         record.billingInterval = null
+        record.stripeSubscriptionId = null
+        record.currentPeriodStart = null
+        record.currentPeriodEnd = null
         record.updatedAt = new Date().toISOString()
       })
       return
@@ -119,16 +177,51 @@ function applySubscriptionUpdate(
   metadataInterval: string | undefined,
 ) {
   const interval = normalizeInterval(metadataInterval, subscription)
+  const priceId = subscription.items.data[0]?.price?.id
+  const planType = planForPriceId(priceId)
+
+  // If the priceId doesn't map to a plan we recognize, refuse to grant access
+  // — protects against ad-hoc / discount prices accidentally upgrading users.
+  if (!planType) {
+    logger.warn("api.billing.webhook", "Unknown priceId on subscription", {
+      userId,
+      customerId,
+      priceId,
+    })
+    return
+  }
 
   updateDatabase((database) => {
-    const record = database.subscriptions.find((item) =>
-      userId ? item.userId === userId : item.stripeCustomerId === customerId,
+    // Prefer matching by stripeCustomerId; only trust the metadata.userId if
+    // it agrees with the customer record we already have. This prevents
+    // anyone with Stripe Dashboard access from re-assigning subscriptions to
+    // arbitrary users via metadata edits.
+    let record = database.subscriptions.find(
+      (item) => customerId && item.stripeCustomerId === customerId,
     )
-    if (!record) return
+    if (!record && userId) {
+      record = database.subscriptions.find((item) => item.userId === userId)
+    }
+    if (!record) {
+      logger.warn("api.billing.webhook", "No local subscription record", {
+        userId,
+        customerId,
+        priceId,
+      })
+      return
+    }
+    if (userId && record.userId !== userId) {
+      logger.error("api.billing.webhook", "metadata.userId mismatch — refusing update", {
+        metadataUserId: userId,
+        recordUserId: record.userId,
+        customerId,
+      })
+      return
+    }
 
     if (customerId) record.stripeCustomerId = customerId
     record.stripeSubscriptionId = subscription.id
-    record.planType = "starter" satisfies PlanType
+    record.planType = planType
     record.status = normalizeStripeStatus(subscription.status)
     if (interval) record.billingInterval = interval
     record.currentPeriodStart = subscription.current_period_start

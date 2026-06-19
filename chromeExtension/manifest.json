@@ -37,6 +37,13 @@
         "https://www.glassdoor.com/*",
         "https://www.monster.com/*",
         "https://www.dice.com/*",
+        "https://boards.greenhouse.io/*",
+        "https://job-boards.greenhouse.io/*",
+        "https://*.greenhouse.io/*",
+        "https://jobs.lever.co/*",
+        "https://*.myworkdayjobs.com/*",
+        "https://apply.workable.com/*",
+        "https://*.ashbyhq.com/*",
         "https://careers.google.com/*",
         "https://careers.microsoft.com/*"
       ],

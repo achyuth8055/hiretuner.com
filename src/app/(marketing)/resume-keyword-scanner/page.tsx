@@ -1,17 +1,20 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { KeywordScannerTool } from "@/components/app/PublicTools"
-import { pageMetadata } from "@/lib/seo"
+import { pageMetadata, JsonLd, breadcrumbLd, webApplicationLd } from "@/lib/seo"
 
-export const metadata = pageMetadata({
-  title: "Resume Keyword Scanner",
-  description: "Scan your resume for technical and soft skills, spot missing role keywords, and get placement recommendations to pass keyword-based ATS filters.",
-  path: "/resume-keyword-scanner",
-})
+const TITLE = "Resume Keyword Scanner"
+const DESCRIPTION =
+  "Scan your resume for technical and soft skills, spot missing role keywords, and get placement recommendations to pass keyword-based ATS filters."
+const PATH = "/resume-keyword-scanner"
+
+export const metadata = pageMetadata({ title: TITLE, description: DESCRIPTION, path: PATH })
 
 export default function ResumeKeywordScannerPage() {
   return (
     <main className="flex-grow w-full max-w-[1200px] mx-auto px-margin-page py-stack-xl flex flex-col gap-stack-xl">
+      <JsonLd data={breadcrumbLd([{ name: "Resume Keyword Scanner", path: PATH }])} />
+      <JsonLd data={webApplicationLd({ name: TITLE, description: DESCRIPTION, path: PATH })} />
       <section>
         <h1 className="font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-stack-sm">
           Resume Keyword Scanner

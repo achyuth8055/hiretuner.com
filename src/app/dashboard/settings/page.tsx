@@ -55,12 +55,20 @@ export default async function SettingsPage() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <div className="font-medium text-primary">
-              {plan === "starter" ? "Starter Plan" : "Free Plan"}
+              {plan === "pro"
+                ? "Pro Plan"
+                : plan === "plus"
+                  ? "Plus Plan"
+                  : plan === "starter"
+                    ? "Starter Plan"
+                    : "Free Plan"}
             </div>
             <div className="text-xs text-on-surface-variant mt-1">
-              {plan === "starter"
-                ? `${limits.tailoredResumes} tailored resumes per month · PDF downloads enabled`
-                : `${limits.jdScans} JD scans per month · Upgrade for unlimited tailoring`}
+              {plan === "pro"
+                ? "Unlimited tailoring · PDF downloads · Ad-free experience"
+                : plan === "starter" || plan === "plus"
+                  ? `${limits.tailoredResumes} tailored resumes per month · PDF downloads enabled`
+                  : `${limits.jdScans} JD scans per month · Upgrade for unlimited tailoring`}
             </div>
           </div>
           {hasStripeCustomer ? (
@@ -74,7 +82,7 @@ export default async function SettingsPage() {
             </Link>
           )}
         </div>
-        {plan === "starter" && (
+        {plan !== "free" && (
           <p className="text-xs text-on-surface-variant border-t border-outline-variant/20 pt-3">
             Manage billing details, switch between monthly/yearly, or cancel anytime via the
             Stripe portal — your access continues until the end of the paid period.

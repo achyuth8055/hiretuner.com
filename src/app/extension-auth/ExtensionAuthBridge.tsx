@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { signInWithPopup } from "firebase/auth"
 import { Button } from "@/components/ui/Button"
@@ -20,45 +20,52 @@ import {
  * Using a bridge avoids requiring a separate Chrome App OAuth client; the
  * existing Firebase Web SDK + Authorized Domains setup is enough.
  */
-export function ExtensionAuthBridge() {
-  const params = useSearchParams()
-  const redirect = params.get("redirect") || ""
+type Phase = "ready" | "configuring" | "signing-in" | "complete" | "error"
 
-  const [phase, setPhase] = useState<
-    "ready" | "configuring" | "signing-in" | "complete" | "error"
-  >("ready")
-  const [error, setError] = useState("")
-  const [user, setUser] = useState<{ email: string; name: string } | null>(null)
-
-  const safeRedirect = (() => {
-    if (!redirect) return null
+function computeInitial(redirect: string): { safeRedirect: string | null; phase: Phase; error: string } {
+  let safeRedirect: string | null = null
+  if (redirect) {
     try {
       const url = new URL(redirect)
       // Accept only chrome.identity callback URLs.
       if (url.protocol === "https:" && url.host.endsWith(".chromiumapp.org")) {
-        return redirect
+        safeRedirect = redirect
       }
     } catch {
       /* fall-through */
     }
-    return null
-  })()
-
-  useEffect(() => {
-    if (!safeRedirect) {
-      setPhase("error")
-      setError(
-        redirect
-          ? "Invalid redirect URL. This page only accepts chrome-extension callbacks (chromiumapp.org)."
-          : "Missing redirect parameter. Open this page from the HireTuner Chrome extension.",
-      )
-    } else if (!isFirebaseClientEnabled()) {
-      setPhase("configuring")
-      setError(
-        "Firebase is not configured on this deployment yet. Set NEXT_PUBLIC_FIREBASE_* env vars.",
-      )
+  }
+  if (!safeRedirect) {
+    return {
+      safeRedirect: null,
+      phase: "error",
+      error: redirect
+        ? "Invalid redirect URL. This page only accepts chrome-extension callbacks (chromiumapp.org)."
+        : "Missing redirect parameter. Open this page from the HireTuner Chrome extension.",
     }
-  }, [redirect, safeRedirect])
+  }
+  if (!isFirebaseClientEnabled()) {
+    return {
+      safeRedirect,
+      phase: "configuring",
+      error: "Firebase is not configured on this deployment yet. Set NEXT_PUBLIC_FIREBASE_* env vars.",
+    }
+  }
+  return { safeRedirect, phase: "ready", error: "" }
+}
+
+export function ExtensionAuthBridge() {
+  const params = useSearchParams()
+  const redirect = params.get("redirect") || ""
+
+  // Initialize state from props/URL synchronously so we never call setState
+  // inside an effect just to derive initial state (react-hooks/set-state-in-effect).
+  const initial = computeInitial(redirect)
+  const safeRedirect = initial.safeRedirect
+
+  const [phase, setPhase] = useState<Phase>(initial.phase)
+  const [error, setError] = useState(initial.error)
+  const [user, setUser] = useState<{ email: string; name: string } | null>(null)
 
   async function handleSignIn() {
     if (!safeRedirect) return

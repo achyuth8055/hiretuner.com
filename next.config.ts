@@ -29,6 +29,17 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  async redirects() {
+    return [
+      // The Java-only guide was generalized into /salary-guide/[role]. Keep the
+      // old URL alive (301) so existing links and search rankings carry over.
+      {
+        source: "/java-developer-salary-guide",
+        destination: "/salary-guide/java-developer",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

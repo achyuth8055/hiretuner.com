@@ -1,17 +1,20 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { JdKeywordTool } from "@/components/app/PublicTools"
-import { pageMetadata } from "@/lib/seo"
+import { pageMetadata, JsonLd, breadcrumbLd, webApplicationLd } from "@/lib/seo"
 
-export const metadata = pageMetadata({
-  title: "Job Description Keyword Extractor",
-  description: "Extract required and preferred skills, responsibilities, tools, seniority, and work mode from any job description so you can tailor your resume fast.",
-  path: "/jd-keyword-extractor",
-})
+const TITLE = "Job Description Keyword Extractor"
+const DESCRIPTION =
+  "Extract required and preferred skills, responsibilities, tools, seniority, and work mode from any job description so you can tailor your resume fast."
+const PATH = "/jd-keyword-extractor"
+
+export const metadata = pageMetadata({ title: TITLE, description: DESCRIPTION, path: PATH })
 
 export default function JdKeywordExtractorPage() {
   return (
     <main className="flex-grow flex flex-col items-center justify-start pt-stack-xl pb-stack-xl px-margin-page w-full max-w-[1200px] mx-auto">
+      <JsonLd data={breadcrumbLd([{ name: "Job Description Keyword Extractor", path: PATH }])} />
+      <JsonLd data={webApplicationLd({ name: TITLE, description: DESCRIPTION, path: PATH })} />
       <div className="text-center w-full max-w-3xl mb-stack-xl">
         <h1 className="font-display-lg text-display-lg md:font-display-lg md:text-display-lg text-primary mb-stack-sm tracking-tight">
           Decode Any Job Description

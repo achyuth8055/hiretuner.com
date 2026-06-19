@@ -29,6 +29,9 @@ Firebase Auth + Firestore + Storage, and the Chrome extension.
 2. Products → create **HireTuner Starter** with two prices:
    - $5.49 / month (recurring) → `STRIPE_STARTER_PRICE_ID`
    - $49.99 / year (recurring) → `STRIPE_STARTER_YEARLY_PRICE_ID`
+   Then create **HireTuner Pro** with two prices:
+   - $9.99 / month (recurring) → `STRIPE_PRO_PRICE_ID`
+   - $120 / year (recurring, marketed as "Max") → `STRIPE_PRO_YEARLY_PRICE_ID`
 3. Developers → Webhooks → Add endpoint
    `https://hiretuner.com/api/billing/webhook` listening to:
    - `checkout.session.completed`

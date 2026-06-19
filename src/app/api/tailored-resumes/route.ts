@@ -6,7 +6,7 @@ import {
   readDatabase,
   saveTailoredResume,
 } from "@/lib/database"
-import { assertUsageAvailable, incrementUsage, jsonError, jsonOk, requireApiUser, readJson } from "@/lib/http"
+import { jsonError, jsonOk, refundUsage, requireApiUser, readJson, reserveUsage } from "@/lib/http"
 import { logger } from "@/lib/logger"
 import { generateTailoredResume } from "@/lib/resume-engine"
 import type { Application, TailoredResume } from "@/lib/rolefit-types"
@@ -50,89 +50,97 @@ export async function POST(request: NextRequest) {
     throw error
   }
 
-  const usageCheck = assertUsageAvailable(context.user.id, "tailoredResumesUsed", context.plan)
-  if (!usageCheck.allowed) {
+  // Atomic check+increment to close TOCTOU (AUTH-H2). Refund on any failure
+  // path below so the user isn't charged when generation throws.
+  const reservation = reserveUsage(context.user.id, "tailoredResumesUsed", context.plan)
+  if (!reservation.ok) {
     logger.warn("api.tailored-resumes", "Monthly tailored-resume limit reached", {
       userId: context.user.id,
       plan: context.plan,
-      used: usageCheck.usage.tailoredResumesUsed,
-      limit: usageCheck.limit,
+      used: reservation.usage.tailoredResumesUsed,
+      limit: reservation.limit,
     })
-    return jsonError(usageCheck.message, 402, "usage_limit", {
-      limit: usageCheck.limit,
-      usage: usageCheck.usage.tailoredResumesUsed,
+    return jsonError(reservation.message, 402, "usage_limit", {
+      limit: reservation.limit,
+      usage: reservation.usage.tailoredResumesUsed,
       upgradeRequired: context.plan === "free",
-      monthlyCap: usageCheck.limit,
+      monthlyCap: reservation.limit,
     })
   }
 
-  const database = readDatabase()
-  const masterResume = getActiveMasterResume(context.user.id)
+  try {
+    const database = readDatabase()
+    const masterResume = getActiveMasterResume(context.user.id)
 
-  if (!masterResume) {
-    return jsonError("Upload and parse a master resume before tailoring.", 409, "master_resume_required")
+    if (!masterResume) {
+      refundUsage(context.user.id, "tailoredResumesUsed")
+      return jsonError("Upload and parse a master resume before tailoring.", 409, "master_resume_required")
+    }
+
+    const jobDescription = database.jobDescriptions.find(
+      (item) => item.id === jobDescriptionId && item.userId === context.user.id
+    )
+
+    if (!jobDescription) {
+      refundUsage(context.user.id, "tailoredResumesUsed")
+      return jsonError("Job description analysis not found.", 404, "not_found")
+    }
+
+    const generated = generateTailoredResume({
+      masterResume,
+      analysis: jobDescription.analysis,
+      confirmedSkills,
+    })
+    const timestamp = nowIso()
+    const versionNumber =
+      database.tailoredResumes.filter((resume) => resume.userId === context.user.id).length + 1
+    const tailoredResume: TailoredResume = {
+      id: createId(),
+      userId: context.user.id,
+      masterResumeId: masterResume.id,
+      jobDescriptionId: jobDescription.id,
+      resumeJson: generated.resumeJson,
+      resumeText: generated.resumeText,
+      originalScore: generated.originalScore,
+      tailoredScore: generated.tailoredScore,
+      scoreBreakdown: generated.scoreBreakdown,
+      keywordCoverage: generated.keywordCoverage,
+      changeLog: generated.changeLog,
+      versionNumber,
+      pdfUrl: null,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    }
+    const application: Application = {
+      id: createId(),
+      userId: context.user.id,
+      tailoredResumeId: tailoredResume.id,
+      companyName: jobDescription.companyName,
+      jobTitle: jobDescription.jobTitle,
+      jobUrl: jobDescription.jobUrl,
+      status: "Saved",
+      notes: "",
+      dateApplied: null,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    }
+
+    saveTailoredResume(tailoredResume, application)
+    logger.info("api.tailored-resumes", "Tailored resume created", {
+      userId: context.user.id,
+      plan: context.plan,
+      tailoredUsed: reservation.usage.tailoredResumesUsed + 1,
+      monthlyLimit: reservation.limit,
+    })
+
+    return jsonOk({
+      tailoredResume,
+      application,
+      usage: reservation.usage,
+      monthlyLimit: reservation.limit,
+    })
+  } catch (error) {
+    refundUsage(context.user.id, "tailoredResumesUsed")
+    throw error
   }
-
-  const jobDescription = database.jobDescriptions.find(
-    (item) => item.id === jobDescriptionId && item.userId === context.user.id
-  )
-
-  if (!jobDescription) {
-    return jsonError("Job description analysis not found.", 404, "not_found")
-  }
-
-  const generated = generateTailoredResume({
-    masterResume,
-    analysis: jobDescription.analysis,
-    confirmedSkills,
-  })
-  const timestamp = nowIso()
-  const versionNumber =
-    database.tailoredResumes.filter((resume) => resume.userId === context.user.id).length + 1
-  const tailoredResume: TailoredResume = {
-    id: createId(),
-    userId: context.user.id,
-    masterResumeId: masterResume.id,
-    jobDescriptionId: jobDescription.id,
-    resumeJson: generated.resumeJson,
-    resumeText: generated.resumeText,
-    originalScore: generated.originalScore,
-    tailoredScore: generated.tailoredScore,
-    scoreBreakdown: generated.scoreBreakdown,
-    keywordCoverage: generated.keywordCoverage,
-    changeLog: generated.changeLog,
-    versionNumber,
-    pdfUrl: null,
-    createdAt: timestamp,
-    updatedAt: timestamp,
-  }
-  const application: Application = {
-    id: createId(),
-    userId: context.user.id,
-    tailoredResumeId: tailoredResume.id,
-    companyName: jobDescription.companyName,
-    jobTitle: jobDescription.jobTitle,
-    jobUrl: jobDescription.jobUrl,
-    status: "Saved",
-    notes: "",
-    dateApplied: null,
-    createdAt: timestamp,
-    updatedAt: timestamp,
-  }
-
-  saveTailoredResume(tailoredResume, application)
-  const updatedUsage = incrementUsage(context.user.id, "tailoredResumesUsed")
-  logger.info("api.tailored-resumes", "Tailored resume created", {
-    userId: context.user.id,
-    plan: context.plan,
-    tailoredUsed: updatedUsage.tailoredResumesUsed,
-    monthlyLimit: usageCheck.limit,
-  })
-
-  return jsonOk({
-    tailoredResume,
-    application,
-    usage: updatedUsage,
-    monthlyLimit: usageCheck.limit,
-  })
 }

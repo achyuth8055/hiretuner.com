@@ -11,8 +11,12 @@
 
 import type { AnalysisResult, ResumeData, JobDescription } from './types';
 import { getCurrentIdToken } from './auth';
+import { reportTelemetry } from './telemetry';
 
-const DEFAULT_API_URL = 'http://localhost:3000';
+// Single source of truth for the API URL. The Options page can override this
+// via chrome.storage.sync, but fresh installs should hit production by
+// default — never localhost.
+const DEFAULT_API_URL = 'https://hiretuner.com';
 
 interface ApiEnvelope {
   ok?: boolean;
@@ -118,6 +122,24 @@ class APIClient {
       const envelope = (await response.json().catch(() => ({}))) as ApiEnvelope;
 
       if (!response.ok || envelope.ok === false) {
+        // 5xx and unexpected errors are worth telemetering; quota/validation
+        // are expected user-recoverable conditions, skip those.
+        const code = envelope.error?.code ?? '';
+        const isExpectedUserError =
+          response.status === 422 ||
+          response.status === 402 ||
+          response.status === 429 ||
+          code === 'usage_limit' ||
+          code === 'validation_error' ||
+          code === 'rate_limited' ||
+          code === 'unauthorized';
+        if (!isExpectedUserError) {
+          void reportTelemetry('api_error', `${endpoint} ${response.status} ${code}`, {
+            endpoint,
+            status: response.status,
+            code,
+          });
+        }
         return {
           type,
           success: false,
@@ -135,6 +157,9 @@ class APIClient {
         timestamp: Date.now(),
       };
     } catch (error) {
+      void reportTelemetry('api_error', error instanceof Error ? error.message : 'fetch threw', {
+        endpoint,
+      });
       return {
         type,
         success: false,

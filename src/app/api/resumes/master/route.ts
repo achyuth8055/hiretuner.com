@@ -6,6 +6,11 @@ import type { MasterResume, StructuredResumeProfile } from "@/lib/rolefit-types"
 
 export const runtime = "nodejs"
 
+// Hard cap matches MAX_UPLOAD_BYTES in resume-engine.ts. The +256 KB allowance
+// covers multipart boundary + headers overhead so a legitimate 5 MB resume
+// isn't rejected by a few bytes of envelope.
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+
 export async function GET(request: NextRequest) {
   const context = requireApiUser(request)
   if (context instanceof Response) return context
@@ -16,6 +21,17 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const context = requireApiUser(request)
   if (context instanceof Response) return context
+
+  // Reject too-large bodies BEFORE parsing — otherwise a 100 MB body spikes
+  // memory and only fails the 5 MB guard after the body is already read.
+  const contentLength = Number(request.headers.get("content-length") ?? 0)
+  if (contentLength > MAX_UPLOAD_BYTES + 256 * 1024) {
+    return jsonError(
+      "Resume file is too large. Upload a PDF, DOCX, or TXT smaller than 5 MB.",
+      413,
+      "payload_too_large",
+    )
+  }
 
   const existing = readDatabase().masterResumes.filter(
     (resume) => resume.userId === context.user.id && resume.active

@@ -30,7 +30,9 @@ const DEFAULT_CONFIG: Record<FieldName | 'debugMode' | 'maxFileSize', string | n
   firebaseStorageBucket: '',
   firebaseMessagingSenderId: '',
   debugMode: false,
-  maxFileSize: 8,
+  // Matches the server-side resume upload cap (5 MB). Picking a higher value
+  // in the UI would just produce a server-side rejection.
+  maxFileSize: 5,
 };
 
 function getField(name: FieldName): HTMLInputElement | null {

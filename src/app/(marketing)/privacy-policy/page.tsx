@@ -1,15 +1,17 @@
-import { pageMetadata } from "@/lib/seo"
+import { pageMetadata, JsonLd, breadcrumbLd, webPageLd } from "@/lib/seo"
 
-export const metadata = pageMetadata({
-  title: "Privacy Policy",
-  description:
-    "How HireTuner collects, uses, shares, and protects your personal information, including our use of cookies and Google AdSense advertising.",
-  path: "/privacy-policy",
-})
+const TITLE = "Privacy Policy"
+const DESCRIPTION =
+  "How HireTuner collects, uses, shares, and protects your personal information, including our use of cookies and Google AdSense advertising."
+const PATH = "/privacy-policy"
+
+export const metadata = pageMetadata({ title: TITLE, description: DESCRIPTION, path: PATH })
 
 export default function PrivacyPolicy() {
   return (
     <div className="max-w-[800px] mx-auto px-margin-page py-stack-xl">
+      <JsonLd data={breadcrumbLd([{ name: "Privacy Policy", path: PATH }])} />
+      <JsonLd data={webPageLd({ name: TITLE, description: DESCRIPTION, path: PATH })} />
       <h1 className="font-display-lg text-display-lg text-primary mb-stack-lg">Privacy Policy</h1>
       <div className="prose prose-slate max-w-none text-on-surface">
         <p>Last updated: June 18, 2026</p>

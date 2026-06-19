@@ -1,17 +1,20 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { SummaryGeneratorTool } from "@/components/app/PublicTools"
-import { pageMetadata } from "@/lib/seo"
+import { pageMetadata, JsonLd, breadcrumbLd, webApplicationLd } from "@/lib/seo"
 
-export const metadata = pageMetadata({
-  title: "Resume Summary Generator",
-  description: "Generate conservative, balanced, keyword-rich, or short ATS-friendly resume summaries tailored to your target role in seconds. Pick the tone that fits.",
-  path: "/resume-summary-generator",
-})
+const TITLE = "Resume Summary Generator"
+const DESCRIPTION =
+  "Generate conservative, balanced, keyword-rich, or short ATS-friendly resume summaries tailored to your target role in seconds. Pick the tone that fits."
+const PATH = "/resume-summary-generator"
+
+export const metadata = pageMetadata({ title: TITLE, description: DESCRIPTION, path: PATH })
 
 export default function ResumeSummaryGeneratorPage() {
   return (
     <main className="flex-grow w-full max-w-[1200px] mx-auto px-margin-page py-12 md:py-24">
+      <JsonLd data={breadcrumbLd([{ name: "Resume Summary Generator", path: PATH }])} />
+      <JsonLd data={webApplicationLd({ name: TITLE, description: DESCRIPTION, path: PATH })} />
       <div className="text-center mb-16 max-w-3xl mx-auto">
         <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-6">
           Resume Summary Generator

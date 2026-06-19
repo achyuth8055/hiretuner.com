@@ -1,17 +1,20 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { AtsScoreTool } from "@/components/app/PublicTools"
-import { pageMetadata } from "@/lib/seo"
+import { pageMetadata, JsonLd, breadcrumbLd, webApplicationLd } from "@/lib/seo"
 
-export const metadata = pageMetadata({
-  title: "Free ATS Resume Score Checker",
-  description: "Check your resume's estimated ATS score in seconds. See formatting, section completeness, keyword strength, and the top issues holding your resume back.",
-  path: "/ats-resume-score-checker",
-})
+const TITLE = "Free ATS Resume Score Checker"
+const DESCRIPTION =
+  "Check your resume's estimated ATS score in seconds. See formatting, section completeness, keyword strength, and the top issues holding your resume back."
+const PATH = "/ats-resume-score-checker"
+
+export const metadata = pageMetadata({ title: TITLE, description: DESCRIPTION, path: PATH })
 
 export default function AtsResumeScoreChecker() {
   return (
     <>
+      <JsonLd data={breadcrumbLd([{ name: "ATS Resume Score Checker", path: PATH }])} />
+      <JsonLd data={webApplicationLd({ name: TITLE, description: DESCRIPTION, path: PATH })} />
       <section className="max-w-[1200px] mx-auto px-margin-page py-stack-xl w-full text-center flex flex-col items-center">
         <h1 className="font-display-lg text-display-lg md:text-display-lg text-display-lg-mobile font-bold text-primary mb-stack-sm max-w-3xl leading-tight">
           Free ATS Resume Score Checker

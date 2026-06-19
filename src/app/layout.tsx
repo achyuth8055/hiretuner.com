@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { siteConfig } from "@/lib/site";
 import { JsonLd } from "@/lib/seo";
 import { ADSENSE_CLIENT_ID } from "@/lib/ads";
+import { CookieConsent } from "@/components/consent/CookieConsent";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -86,6 +87,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-background text-on-background font-inter selection:bg-secondary-fixed selection:text-on-secondary-fixed">
         {children}
+        <CookieConsent />
       </body>
     </html>
   );

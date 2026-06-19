@@ -54,6 +54,22 @@ export async function POST(request: Request) {
     return jsonError("Token is missing an email claim.", 422, "validation_error")
   }
 
+  // Require the auth provider to have verified the email. Without this, an
+  // attacker who can mint a Firebase Email/Password token for an arbitrary
+  // address could take over an existing HireTuner account that uses the same
+  // email. Google sign-in always verifies; password sign-in may not.
+  if (decoded.email_verified !== true) {
+    logger.warn("api.auth.firebase", "Rejected unverified email token", {
+      email,
+      provider: decoded.firebase?.sign_in_provider,
+    })
+    return jsonError(
+      "Email is not verified by your sign-in provider. Verify your email and try again.",
+      403,
+      "email_not_verified",
+    )
+  }
+
   const name =
     (decoded.name as string | undefined)?.trim() ||
     email.split("@")[0] ||
@@ -72,6 +88,9 @@ export async function POST(request: Request) {
       email,
       passwordHash,
       authProvider: "google",
+      // Google has already verified this email — we required
+      // decoded.email_verified above. Skip the verification round-trip.
+      emailVerifiedAt: timestamp,
       createdAt: timestamp,
       updatedAt: timestamp,
     } satisfies User
@@ -104,9 +123,18 @@ export async function POST(request: Request) {
       email,
     })
   } else {
-    // Keep the display name in sync if Google changed it.
-    if (user.name !== name) {
-      const updated = { ...user, name, updatedAt: nowIso() }
+    // Keep the display name in sync if Google changed it, and mark email
+    // as verified the first time the user signs in via Google (Firebase
+    // already enforced email_verified above).
+    const shouldUpdateName = user.name !== name
+    const shouldVerifyEmail = !user.emailVerifiedAt
+    if (shouldUpdateName || shouldVerifyEmail) {
+      const updated: User = {
+        ...user,
+        name: shouldUpdateName ? name : user.name,
+        emailVerifiedAt: shouldVerifyEmail ? nowIso() : user.emailVerifiedAt,
+        updatedAt: nowIso(),
+      }
       updateDatabase((database) => {
         const idx = database.users.findIndex((item) => item.id === updated.id)
         if (idx >= 0) database.users[idx] = updated

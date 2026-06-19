@@ -1,28 +1,28 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { AdSlot } from "@/components/ads/AdSlot"
-import { pageMetadata } from "@/lib/seo"
+import { pageMetadata, JsonLd, breadcrumbLd, webPageLd } from "@/lib/seo"
 
-export const metadata = pageMetadata({
-  title: "About HireTuner: AI Resume Tailoring",
-  description:
-    "Learn why we built HireTuner: AI that tailors your resume to any job description, beats ATS keyword filters, and never invents skills you lack.",
-  path: "/about",
-})
+const TITLE = "About HireTuner: AI Resume Tailoring"
+const DESCRIPTION =
+  "Learn why we built HireTuner: AI that tailors your resume to any job description, beats ATS keyword filters, and never invents skills you lack."
+const PATH = "/about"
+
+export const metadata = pageMetadata({ title: TITLE, description: DESCRIPTION, path: PATH })
 
 export default function About() {
   return (
     <div className="max-w-[800px] mx-auto px-margin-page py-stack-xl flex flex-col gap-stack-xl">
+      <JsonLd data={breadcrumbLd([{ name: "About", path: PATH }])} />
+      <JsonLd data={webPageLd({ name: TITLE, description: DESCRIPTION, path: PATH, type: "AboutPage" })} />
       <header className="flex flex-col gap-stack-md">
         <span className="font-label-uppercase text-label-uppercase text-secondary tracking-widest">Our mission</span>
         <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary">
           We believe the right candidate should never lose to the wrong keyword.
         </h1>
-        <p className="font-body-base text-body-base text-on-surface-variant">
-          <p>At HireTuner, our mission is to level the playing field for job seekers by providing powerful AI-driven tools that ensure your qualifications are accurately recognized by Applicant Tracking Systems.</p>
-          <h2>Our Story</h2>
-          <p>We saw too many talented professionals getting auto-rejected because they didn&apos;t match the exact keyword permutations of a job description. We built HireTuner to fix that.</p>
-        </p>
+        <p className="font-body-base text-body-base text-on-surface-variant">At HireTuner, our mission is to level the playing field for job seekers by providing powerful AI-driven tools that ensure your qualifications are accurately recognized by Applicant Tracking Systems.</p>
+        <h2 className="font-headline-md text-headline-md text-primary">Our Story</h2>
+        <p className="font-body-base text-body-base text-on-surface-variant">We saw too many talented professionals getting auto-rejected because they didn&apos;t match the exact keyword permutations of a job description. We built HireTuner to fix that.</p>
       </header>
 
       <section className="flex flex-col gap-stack-md">

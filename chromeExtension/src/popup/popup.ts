@@ -10,6 +10,7 @@ import {
   signInWithGoogle,
   signOut,
 } from '../common/auth';
+import { dlog } from '../common/debug';
 import type { ResumeData, JobDescription, AnalysisResult } from '../common/types';
 
 // DOM Elements
@@ -123,37 +124,48 @@ analyzeBtn.addEventListener('click', async () => {
   }
 });
 
-// Extract job description from current page
+// Inspect chrome.runtime.lastError so we can tell apart "content script not
+// injected on this page" from "content script ran but found nothing". Both
+// previously surfaced the same vague message.
+function describeMessageError(): string {
+  const err = chrome.runtime.lastError?.message ?? '';
+  if (err.includes('Could not establish connection') || err.includes('Receiving end does not exist')) {
+    return 'HireTuner doesn\'t run on this page. Open a supported job site (LinkedIn, Indeed, Greenhouse, Lever, Workday, etc.) and try again.';
+  }
+  if (err) return err;
+  return 'No job description detected on this page. Try paste the text manually.';
+}
+
 extractJobBtn.addEventListener('click', async () => {
   try {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     const activeTab = tabs[0];
 
-    if (!activeTab.id) {
-      showError('Could not access active tab');
+    if (!activeTab?.id) {
+      showError('Could not access the active tab.');
       return;
     }
 
     chrome.tabs.sendMessage(activeTab.id, { action: 'EXTRACT_JOB_DESCRIPTION' }, (response) => {
       if (response?.success && response.data?.text) {
         jobDescInput.value = response.data.text;
+        hideError();
       } else {
-        showError('Could not extract job description from this page');
+        showError(describeMessageError());
       }
     });
-  } catch (error) {
-    showError('Failed to extract job description');
+  } catch {
+    showError('Failed to extract job description.');
   }
 });
 
-// Extract from page button (in Extract tab)
 extractJobPageBtn.addEventListener('click', async () => {
   try {
     const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     const activeTab = tabs[0];
 
-    if (!activeTab.id) {
-      showError('Could not access active tab');
+    if (!activeTab?.id) {
+      showError('Could not access the active tab.');
       return;
     }
 
@@ -162,12 +174,13 @@ extractJobPageBtn.addEventListener('click', async () => {
         const extractedJob = document.getElementById('extractedJob') as HTMLElement;
         extractedJob.textContent = response.data.text;
         extractedJob.style.display = 'block';
+        hideError();
       } else {
-        showError('Could not extract job description from this page');
+        showError(describeMessageError());
       }
     });
-  } catch (error) {
-    showError('Failed to extract job description');
+  } catch {
+    showError('Failed to extract job description.');
   }
 });
 
@@ -338,4 +351,5 @@ signOutBtn?.addEventListener('click', async () => {
 
 void refreshAuthUI();
 
-console.log('[Popup] Script initialized');
+// Debug-gated — silent in production. Toggle `debug=true` in Options to enable.
+void dlog('Popup', 'Script initialized');

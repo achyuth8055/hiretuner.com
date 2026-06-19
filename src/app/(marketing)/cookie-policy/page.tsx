@@ -1,15 +1,17 @@
-import { pageMetadata } from "@/lib/seo"
+import { pageMetadata, JsonLd, breadcrumbLd, webPageLd } from "@/lib/seo"
 
-export const metadata = pageMetadata({
-  title: "Cookie Policy",
-  description:
-    "Learn what cookies HireTuner uses, including strictly necessary, functional, analytics, and Google AdSense advertising cookies, and how to control them.",
-  path: "/cookie-policy",
-})
+const TITLE = "Cookie Policy"
+const DESCRIPTION =
+  "Learn what cookies HireTuner uses, including strictly necessary, functional, analytics, and Google AdSense advertising cookies, and how to control them."
+const PATH = "/cookie-policy"
+
+export const metadata = pageMetadata({ title: TITLE, description: DESCRIPTION, path: PATH })
 
 export default function CookiePolicy() {
   return (
     <div className="max-w-[800px] mx-auto px-margin-page py-stack-xl">
+      <JsonLd data={breadcrumbLd([{ name: "Cookie Policy", path: PATH }])} />
+      <JsonLd data={webPageLd({ name: TITLE, description: DESCRIPTION, path: PATH })} />
       <h1 className="font-display-lg text-display-lg text-primary mb-stack-lg">Cookie Policy</h1>
       <div className="prose prose-slate max-w-none text-on-surface">
         <p>Last updated: June 18, 2026</p>

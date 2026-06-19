@@ -1,4 +1,4 @@
-export type PlanType = "free" | "starter" | "plus"
+export type PlanType = "free" | "starter" | "plus" | "pro"
 export type BillingInterval = "monthly" | "yearly"
 export type SubscriptionStatus =
   | "active"
@@ -31,8 +31,23 @@ export type User = {
   email: string
   passwordHash: string
   authProvider: AuthProvider
+  // ISO timestamp set when the user clicked the verification link or signed
+  // in via a provider (Google) that verified the address. Null/undefined =
+  // not verified yet. Legacy users (pre-feature) are treated as verified.
+  emailVerifiedAt?: string | null
   createdAt: string
   updatedAt: string
+}
+
+// Single-use email verification token. Hash-only stored at rest.
+export type EmailVerificationToken = {
+  id: string
+  userId: string
+  email: string
+  tokenHash: string
+  expiresAt: string
+  usedAt: string | null
+  createdAt: string
 }
 
 export type Subscription = {
@@ -220,6 +235,12 @@ export type JobDescription = {
   createdAt: string
 }
 
+// Template the user picked in the editor when this tailored resume was
+// generated. Persisted so the download path renders the same template the
+// preview showed. New resumes default to "classic"; legacy rows without the
+// field are also treated as "classic".
+export type ResumeTemplateId = "classic" | "modern" | "compact"
+
 export type TailoredResume = {
   id: string
   userId: string
@@ -234,6 +255,7 @@ export type TailoredResume = {
   changeLog: ChangeLogItem[]
   versionNumber: number
   pdfUrl: string | null
+  chosenTemplateId?: ResumeTemplateId
   createdAt: string
   updatedAt: string
 }
@@ -291,6 +313,12 @@ export type PasswordResetToken = {
   createdAt: string
 }
 
+export type ProcessedStripeEvent = {
+  id: string
+  type: string
+  processedAt: string
+}
+
 export type RoleFitDatabase = {
   users: User[]
   subscriptions: Subscription[]
@@ -303,7 +331,13 @@ export type RoleFitDatabase = {
   salaryEstimates: SalaryEstimate[]
   sessions: Session[]
   passwordResetTokens: PasswordResetToken[]
+  processedStripeEvents?: ProcessedStripeEvent[]
+  emailVerificationTokens?: EmailVerificationToken[]
 }
+
+// Sentinel for "effectively unlimited" count-based limits on the Pro plan.
+// Large enough that no real user reaches it; pdfDownloads uses null (no cap).
+export const UNLIMITED = 1_000_000
 
 export const PLAN_LIMITS: Record<
   PlanType,
@@ -356,6 +390,21 @@ export const PLAN_LIMITS: Record<
     resumeMatchChecks: 200,
     salaryEstimates: 50,
     publicToolUsage: 250,
+    fullKeywordGap: true,
+    fullScoreBreakdown: true,
+    versionHistoryDays: 365,
+  },
+  // Pro = unlimited usage, ad-free. Count fields use UNLIMITED; Pro is also
+  // exempted from PAID_PLAN_MONTHLY_RESUME_LIMIT in limitForField().
+  pro: {
+    masterResumes: UNLIMITED,
+    jdScans: UNLIMITED,
+    tailoredResumes: UNLIMITED,
+    pdfDownloads: null,
+    atsChecks: UNLIMITED,
+    resumeMatchChecks: UNLIMITED,
+    salaryEstimates: UNLIMITED,
+    publicToolUsage: UNLIMITED,
     fullKeywordGap: true,
     fullScoreBreakdown: true,
     versionHistoryDays: 365,

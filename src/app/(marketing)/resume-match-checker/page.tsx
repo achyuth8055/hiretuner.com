@@ -1,17 +1,20 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { ResumeMatchTool } from "@/components/app/PublicTools"
-import { pageMetadata } from "@/lib/seo"
+import { pageMetadata, JsonLd, breadcrumbLd, webApplicationLd } from "@/lib/seo"
 
-export const metadata = pageMetadata({
-  title: "Resume Match Checker: Compare Resume to Job Description",
-  description: "Paste your resume and a job description to get an estimated match score, missing keywords, and clear suggestions to tailor your resume for the role.",
-  path: "/resume-match-checker",
-})
+const TITLE = "Resume Match Checker: Compare Resume to Job Description"
+const DESCRIPTION =
+  "Paste your resume and a job description to get an estimated match score, missing keywords, and clear suggestions to tailor your resume for the role."
+const PATH = "/resume-match-checker"
+
+export const metadata = pageMetadata({ title: TITLE, description: DESCRIPTION, path: PATH })
 
 export default function ResumeMatchCheckerPage() {
   return (
     <>
+      <JsonLd data={breadcrumbLd([{ name: "Resume Match Checker", path: PATH }])} />
+      <JsonLd data={webApplicationLd({ name: TITLE, description: DESCRIPTION, path: PATH })} />
       <section className="max-w-[1200px] mx-auto px-margin-page pt-stack-xl pb-stack-lg text-center">
         <h1 className="font-display-lg text-display-lg text-primary mb-stack-sm">Resume Match Checker</h1>
         <p className="font-body-base text-body-base text-on-surface-variant max-w-2xl mx-auto">

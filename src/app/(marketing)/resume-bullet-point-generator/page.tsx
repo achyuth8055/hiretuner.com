@@ -1,17 +1,20 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { BulletGeneratorTool } from "@/components/app/PublicTools"
-import { pageMetadata } from "@/lib/seo"
+import { pageMetadata, JsonLd, breadcrumbLd, webApplicationLd } from "@/lib/seo"
 
-export const metadata = pageMetadata({
-  title: "Resume Bullet Point Generator",
-  description: "Turn weak, vague resume bullets into stronger, role-specific, ATS-friendly options that highlight measurable impact and the right keywords for the job.",
-  path: "/resume-bullet-point-generator",
-})
+const TITLE = "Resume Bullet Point Generator"
+const DESCRIPTION =
+  "Turn weak, vague resume bullets into stronger, role-specific, ATS-friendly options that highlight measurable impact and the right keywords for the job."
+const PATH = "/resume-bullet-point-generator"
+
+export const metadata = pageMetadata({ title: TITLE, description: DESCRIPTION, path: PATH })
 
 export default function ResumeBulletPointGeneratorPage() {
   return (
     <main className="flex-grow w-full max-w-[1200px] mx-auto px-margin-page py-12 md:py-24">
+      <JsonLd data={breadcrumbLd([{ name: "Resume Bullet Point Generator", path: PATH }])} />
+      <JsonLd data={webApplicationLd({ name: TITLE, description: DESCRIPTION, path: PATH })} />
       <div className="text-center mb-16 max-w-3xl mx-auto">
         <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-6">
           Elevate Your Experience.

@@ -33,16 +33,18 @@ export function AdSlot({ slot, format = "auto", label = true, className }: AdSlo
   const adSlot = slot in AD_SLOTS ? AD_SLOTS[slot as AdSlotName] : slot
 
   useEffect(() => {
-    if (!resolved || !adsEnabled || pushed.current) return
+    if (!resolved || !adsEnabled || !adSlot || pushed.current) return
     try {
       ;(window.adsbygoogle = window.adsbygoogle || []).push({})
       pushed.current = true
     } catch {
       // adsbygoogle not ready yet; it will retry on next mount.
     }
-  }, [resolved, adsEnabled])
+  }, [resolved, adsEnabled, adSlot])
 
-  if (!resolved || !adsEnabled || !ADSENSE_CLIENT_ID) return null
+  // Render nothing until a real slot id is configured, so the site never shows
+  // an empty "Advertisement" placeholder while a unit is unset or pending.
+  if (!resolved || !adsEnabled || !ADSENSE_CLIENT_ID || !adSlot) return null
 
   return (
     <aside

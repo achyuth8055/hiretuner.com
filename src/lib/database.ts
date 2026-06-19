@@ -30,6 +30,8 @@ const emptyDatabase = (): RoleFitDatabase => ({
   salaryEstimates: [],
   sessions: [],
   passwordResetTokens: [],
+  processedStripeEvents: [],
+  emailVerificationTokens: [],
 })
 
 function ensureDatabaseFile() {
@@ -67,6 +69,8 @@ export function readDatabase(): RoleFitDatabase {
       salaryEstimates: parsed.salaryEstimates ?? [],
       sessions: parsed.sessions ?? [],
       passwordResetTokens: parsed.passwordResetTokens ?? [],
+      processedStripeEvents: parsed.processedStripeEvents ?? [],
+      emailVerificationTokens: parsed.emailVerificationTokens ?? [],
     }
   } catch {
     const fallback = emptyDatabase()
@@ -82,11 +86,66 @@ export function writeDatabase(database: RoleFitDatabase) {
   renameSync(tempFile, DB_FILE)
 }
 
+/**
+ * Optional cross-process lock. Loaded lazily: if `proper-lockfile` isn't
+ * installed (e.g. before `npm install proper-lockfile` runs on the deploy
+ * host) we fall back to in-process serialization, which is safe for a
+ * single Railway instance because Node.js is single-threaded and our
+ * mutator functions never await between read and write.
+ */
+type LockSyncFn = (file: string, options?: { realpath?: boolean; retries?: number; stale?: number }) => () => void
+let lockSyncCache: LockSyncFn | null | undefined = undefined
+function getLockSync(): LockSyncFn | null {
+  if (lockSyncCache !== undefined) return lockSyncCache
+  try {
+    // Defeat TS / bundler resolution — optional npm dep.
+    const moduleName = "proper-lockfile"
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require(moduleName) as { lockSync?: LockSyncFn }
+    lockSyncCache = typeof mod.lockSync === "function" ? mod.lockSync : null
+  } catch {
+    lockSyncCache = null
+  }
+  return lockSyncCache
+}
+
+/**
+ * Atomic read-mutate-write on the JSON store.
+ *
+ * Within a single Node process this is naturally race-free: JavaScript is
+ * single-threaded and the mutator never awaits, so two requests cannot
+ * interleave reads and writes. Multi-process deploys (multiple Railway
+ * replicas) additionally require `proper-lockfile` — installed optionally
+ * via `npm install proper-lockfile`. When present we acquire a cross-process
+ * file lock around the read-mutate-write block.
+ */
 export function updateDatabase<T>(mutator: (database: RoleFitDatabase) => T): T {
-  const database = readDatabase()
-  const result = mutator(database)
-  writeDatabase(database)
-  return result
+  const lockSync = getLockSync()
+  let release: (() => void) | null = null
+  if (lockSync) {
+    ensureDatabaseFile()
+    try {
+      release = lockSync(DB_FILE, { retries: 10, stale: 5000 })
+    } catch {
+      // If the lock can't be acquired (e.g. stale-lock cleanup edge case)
+      // proceed without the cross-process lock; in-process semantics still
+      // protect this single Node worker.
+    }
+  }
+  try {
+    const database = readDatabase()
+    const result = mutator(database)
+    writeDatabase(database)
+    return result
+  } finally {
+    if (release) {
+      try {
+        release()
+      } catch {
+        /* nothing to do — file lock release best-effort */
+      }
+    }
+  }
 }
 
 export function nowIso() {

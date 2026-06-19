@@ -124,12 +124,33 @@ function canonical(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9+#.]+/g, " ").trim()
 }
 
+// Negation cues that precede or surround a skill mention and mean "this
+// person does NOT have this skill" / "we do NOT want this skill". Limited to
+// English; expand as needed for other languages.
+const NEGATION_RE =
+  /\b(no|not|never|without|don[' ]?t|doesn[' ]?t|haven[' ]?t|hasn[' ]?t|wasn[' ]?t|aren[' ]?t|cannot|can[' ]?t|lack(?:s|ed)?|absence of)\b/i
+
+function isMatchNegated(haystack: string, matchIndex: number, matchLength: number) {
+  // Look at a small window before the match — negation cues typically appear
+  // within ~60 chars to the left ("I do not have AWS experience").
+  const start = Math.max(0, matchIndex - 80)
+  const end = Math.min(haystack.length, matchIndex + matchLength + 20)
+  return NEGATION_RE.test(haystack.slice(start, end))
+}
+
 function includesTerm(haystack: string, needle: string) {
   const normalizedHaystack = canonical(haystack)
   const normalizedNeedle = canonical(needle)
   if (!normalizedNeedle) return false
 
-  return new RegExp(`(^|\\s)${escapeRegExp(normalizedNeedle)}($|\\s)`, "i").test(normalizedHaystack)
+  const re = new RegExp(`(^|\\s)${escapeRegExp(normalizedNeedle)}($|\\s)`, "gi")
+  let match: RegExpExecArray | null
+  while ((match = re.exec(normalizedHaystack))) {
+    if (!isMatchNegated(normalizedHaystack, match.index, match[0].length)) {
+      return true
+    }
+  }
+  return false
 }
 
 function escapeRegExp(value: string) {
@@ -162,7 +183,11 @@ function average(values: number[]) {
 }
 
 function percentage(matched: number, total: number) {
-  if (total === 0) return 85
+  // Categories with zero items used to default to 85, which inflated the
+  // weighted score across categories that don't apply to the JD. Returning 0
+  // is more honest; callers should omit a category when total is 0 if they
+  // want to avoid weighting it.
+  if (total === 0) return 0
   return clampScore((matched / total) * 100)
 }
 
@@ -187,7 +212,7 @@ export async function extractResumeTextFromFile(file: File) {
   }
 
   if (file.type === "application/pdf" || fileName.endsWith(".pdf")) {
-    const text = extractTextFromPdfBuffer(buffer)
+    const text = await extractTextFromPdfBufferAsync(buffer)
     if (!text) {
       throw new Error("Parsing failed. The PDF may be scanned or image-only.")
     }
@@ -198,7 +223,7 @@ export async function extractResumeTextFromFile(file: File) {
     file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
     fileName.endsWith(".docx")
   ) {
-    const text = extractTextFromDocxBuffer(buffer)
+    const text = await extractTextFromDocxBufferAsync(buffer)
     if (!text) {
       throw new Error("Parsing failed. The DOCX file did not contain readable document text.")
     }
@@ -206,6 +231,96 @@ export async function extractResumeTextFromFile(file: File) {
   }
 
   throw new Error("Unsupported file type. Upload a PDF, DOCX, or TXT file.")
+}
+
+/**
+ * DOCX text extraction. Prefers `mammoth` if the optional npm package is
+ * installed (handles headers, footers, text-boxes, all HTML entities). Falls
+ * back to the original homegrown ZIP+XML parser when mammoth isn't available
+ * so the build keeps working before `npm install mammoth` runs.
+ */
+async function extractTextFromDocxBufferAsync(buffer: Buffer): Promise<string> {
+  try {
+    // Defeat TS/bundler resolution — optional npm dep.
+    const moduleName = "mammoth"
+    const mod = (await import(/* webpackIgnore: true */ moduleName)) as {
+      extractRawText: (input: { buffer: Buffer }) => Promise<{ value: string }>
+    }
+    const result = await mod.extractRawText({ buffer })
+    if (result?.value) {
+      return normalizeText(result.value)
+    }
+    // mammoth ran but produced no text — fall through to the homegrown
+    // parser, which may surface partial content from the document.xml.
+  } catch {
+    // mammoth not installed — fall through to homegrown parser.
+  }
+  return extractTextFromDocxBuffer(buffer)
+}
+
+/**
+ * PDF text extraction. Prefers `pdfjs-dist` if available — it reads
+ * FlateDecode-compressed content streams (which the homegrown regex parser
+ * cannot) and exposes per-item x/y positions so we can reconstruct reading
+ * order for two-column resumes. Falls back to the homegrown parser when the
+ * optional package isn't installed.
+ */
+type PdfTextItem = { str: string; transform: number[] }
+
+async function extractTextFromPdfBufferAsync(buffer: Buffer): Promise<string> {
+  try {
+    const moduleName = "pdfjs-dist/legacy/build/pdf.mjs"
+    const mod = (await import(/* webpackIgnore: true */ moduleName)) as {
+      getDocument: (opts: { data: Uint8Array; useSystemFonts?: boolean }) => {
+        promise: Promise<{
+          numPages: number
+          getPage: (n: number) => Promise<{
+            getTextContent: () => Promise<{ items: Array<PdfTextItem | { type: string }> }>
+          }>
+        }>
+      }
+    }
+    const doc = await mod
+      .getDocument({ data: new Uint8Array(buffer), useSystemFonts: true })
+      .promise
+
+    const pageTexts: string[] = []
+    for (let i = 1; i <= doc.numPages; i++) {
+      const page = await doc.getPage(i)
+      const content = await page.getTextContent()
+      // pdfjs returns text items with x/y in `transform[4]/[5]` (PDF origin
+      // is bottom-left so y descends top→bottom in reading order). Sort first
+      // by descending y, then ascending x to recover top-to-bottom,
+      // left-to-right reading order.
+      const items = content.items
+        .filter((it): it is PdfTextItem => "str" in it && "transform" in it)
+        .map((it) => ({ str: it.str, x: it.transform[4], y: it.transform[5] }))
+        .sort((a, b) => b.y - a.y || a.x - b.x)
+
+      // Coalesce items on the same baseline (±2pt) into one line, otherwise
+      // start a new line. This is how we reconstruct paragraph breaks.
+      let currentY: number | null = null
+      let line: string[] = []
+      const lines: string[] = []
+      for (const it of items) {
+        if (currentY === null || Math.abs(currentY - it.y) > 2) {
+          if (line.length) lines.push(line.join(" "))
+          line = [it.str]
+          currentY = it.y
+        } else {
+          line.push(it.str)
+        }
+      }
+      if (line.length) lines.push(line.join(" "))
+      pageTexts.push(lines.join("\n"))
+    }
+    const joined = normalizeText(pageTexts.join("\n\n"))
+    if (joined.length > 0) return joined
+    // pdfjs ran but produced no text — fall through.
+  } catch {
+    // pdfjs-dist not installed (or threw) — fall through to homegrown parser.
+  }
+  return extractTextFromPdfBuffer(buffer)
 }
 
 function extractTextFromPdfBuffer(buffer: Buffer) {
@@ -341,6 +456,72 @@ export function emptyStructuredProfile(): StructuredResumeProfile {
   }
 }
 
+// Common resume-section / non-name tokens. Any line containing these is
+// rejected as a name candidate even if the rest of the line "looks" like one.
+const NON_NAME_TOKENS =
+  /\b(resume|cv|curriculum|summary|profile|experience|education|skills|certifications|projects|portfolio|references|objective|languages|interests|hobbies|engineer|developer|analyst|manager|designer|architect|consultant|specialist|intern|director|founder|lead)\b/i
+
+/**
+ * Pick the candidate's name from the top of the resume.
+ *
+ * Strategy:
+ *  1. Find the first line that contains the parsed email or phone.
+ *  2. Walk UP from there looking for a line that title-cases as a name
+ *     (2-4 capitalized words, no role/header keywords, no commas).
+ *  3. Fall back to the first non-empty line that passes the name-shape test.
+ *
+ * The previous heuristic — "first short line without @ or 3 digits or
+ * resume keywords" — broke on resumes that started with a role headline
+ * above the name, or where the name line happened to contain "555" as part
+ * of a phone number.
+ */
+function extractFullName(lines: string[], email: string, phone: string): string {
+  const isNameShaped = (line: string) => {
+    if (!line || line.length > 60) return false
+    if (line.includes("@") || line.includes("|")) return false
+    if (NON_NAME_TOKENS.test(line)) return false
+    if (/[.@#]/.test(line)) return false
+    // 2-4 tokens, each starting with a capital letter (allow hyphenated /
+    // apostrophe-bearing names + a few suffixes).
+    const tokens = line.trim().split(/\s+/)
+    if (tokens.length < 2 || tokens.length > 4) return false
+    return tokens.every((token) =>
+      /^([A-Z][a-zA-ZÀ-ÖØ-öø-ÿ'`’-]+(?:\.\s?)?|[A-Z]\.|[A-Z][a-z]\.|Jr\.|Sr\.|III?)$/.test(token),
+    )
+  }
+
+  // Find the line that holds the contact info (email/phone) so we know which
+  // direction to walk for the name.
+  let contactLine = -1
+  if (email) contactLine = lines.findIndex((line) => line.includes(email))
+  if (contactLine === -1 && phone) {
+    contactLine = lines.findIndex((line) => line.includes(phone))
+  }
+
+  if (contactLine > 0) {
+    // Walk up: the name is almost always within 3 lines above the contact info.
+    for (let i = contactLine - 1; i >= Math.max(0, contactLine - 4); i -= 1) {
+      if (isNameShaped(lines[i])) return lines[i]
+    }
+  }
+
+  // Fall back to the first name-shaped line in the top 8 lines of the doc.
+  for (const line of lines.slice(0, 8)) {
+    if (isNameShaped(line)) return line
+  }
+
+  // Last resort: original loose heuristic (preserve old behavior for resumes
+  // that don't match the strict name shape — e.g. mononyms, very long names).
+  return (
+    lines.find(
+      (line) =>
+        line.length <= 80 &&
+        !line.includes("@") &&
+        !NON_NAME_TOKENS.test(line),
+    ) ?? ""
+  )
+}
+
 export function parseResumeText(parsedText: string): StructuredResumeProfile {
   const text = normalizeText(parsedText)
   const lines = text
@@ -357,14 +538,7 @@ export function parseResumeText(parsedText: string): StructuredResumeProfile {
   profile.contact.portfolio =
     text.match(/(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+\.[a-z]{2,}(?:\/[^\s)]*)?/i)?.[0] ?? ""
 
-  const firstNameLine = lines.find(
-    (line) =>
-      line.length <= 80 &&
-      !line.includes("@") &&
-      !/\d{3}/.test(line) &&
-      !/resume|summary|experience|skills/i.test(line)
-  )
-  profile.contact.fullName = firstNameLine ?? ""
+  profile.contact.fullName = extractFullName(lines, profile.contact.email, profile.contact.phone)
 
   profile.summary = extractSection(text, ["summary", "profile", "professional summary"])
     .split("\n")
@@ -441,75 +615,312 @@ function parseExperience(text: string): ExperienceItem[] {
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean)
-  const bullets = lines
-    .filter((line) => /^[-*•]/.test(line) || /\b(developed|built|led|managed|created|implemented|improved|designed)\b/i.test(line))
-    .map((line) => line.replace(/^[-*•]\s*/, ""))
-    .slice(0, 8)
 
-  const titleLine =
-    lines.find((line) =>
-      /\b(engineer|developer|analyst|manager|consultant|specialist|architect|intern)\b/i.test(line)
-    ) ?? "Experience"
+  return parseMultipleExperienceEntries(lines)
+}
 
-  if (bullets.length === 0) return []
+// Matches a date range with explicit start/end, e.g.:
+//   "Aug 2020 - Present"  "Jan 2021 – Feb 2024"  "2018 - 2020"  "2018-Present"
+const DATE_RANGE_RE =
+  /\b((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*\d{4}|\d{4})\s*[-–—]\s*(present|current|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s*\d{4}|\d{4})\b/i
 
-  return [
-    {
-      id: createId(),
-      jobTitle: titleLine.split(/\s[-|–]\s/)[0] || titleLine,
-      company: titleLine.split(/\s[-|–]\s/)[1] || "",
-      location: "",
-      startDate: "",
-      endDate: "",
-      currentRole: /present|current/i.test(experienceSection),
-      bullets,
-    },
-  ]
+const TITLE_TOKEN_RE =
+  /\b(engineer|developer|analyst|manager|consultant|specialist|architect|intern|designer|lead|director|founder|coordinator|administrator|scientist|researcher|writer|editor|representative)\b/i
+
+const BULLET_VERB_RE =
+  /^[-*•]/
+
+const BULLET_ACTION_RE =
+  /\b(developed|built|led|managed|created|implemented|improved|designed|launched|shipped|owned|delivered|reduced|increased|automated|migrated|architected|mentored|collaborated|coordinated|analyzed|presented|optimized|deployed|supported|debugged|investigated|drove|championed|architected)\b/i
+
+function extractDateRange(line: string): { start: string; end: string; current: boolean } | null {
+  const match = line.match(DATE_RANGE_RE)
+  if (!match) return null
+  const start = match[1].trim()
+  const endRaw = match[2].trim()
+  const current = /present|current/i.test(endRaw)
+  return { start, end: current ? "" : endRaw, current }
+}
+
+/**
+ * Try to split a header line like "Senior Engineer | Acme Corp" or
+ * "Software Engineer at TechCorp" into a {jobTitle, company} pair. Returns the
+ * line as the title and an empty company when no separator is detected.
+ */
+function splitTitleAndCompany(line: string): { jobTitle: string; company: string } {
+  // strip date ranges from the header line itself
+  const cleaned = line.replace(DATE_RANGE_RE, "").replace(/[—–]+/g, "-").trim()
+  // " - " / " | " / " — " separators
+  const sep = cleaned.match(/^([^-|@]{2,80})\s+(?:[-|]|at)\s+(.+)$/i)
+  if (sep) {
+    return { jobTitle: sep[1].trim().replace(/,\s*$/, ""), company: sep[2].trim() }
+  }
+  return { jobTitle: cleaned.replace(/,\s*$/, ""), company: "" }
+}
+
+function lineLooksLikeJobHeader(line: string): boolean {
+  if (line.length < 4 || line.length > 200) return false
+  if (BULLET_VERB_RE.test(line)) return false
+  // a date range OR a title-token + length cap
+  return Boolean(extractDateRange(line)) || (TITLE_TOKEN_RE.test(line) && line.length < 140)
+}
+
+/**
+ * Parse the experience-section line stream into discrete role entries. A new
+ * role starts at any line that looks like a header — either it contains a
+ * date range, or it carries a title-token (Engineer / Developer / etc.) AND
+ * the previous entry already had bullets.
+ *
+ * Falls back to "one entry containing all detected bullets" if no header
+ * lines are found — preserves the previous behavior for resumes the parser
+ * can't break apart.
+ */
+function parseMultipleExperienceEntries(lines: string[]): ExperienceItem[] {
+  const entries: ExperienceItem[] = []
+  let current: ExperienceItem | null = null
+
+  const flush = () => {
+    if (current && current.bullets.length > 0) entries.push(current)
+    current = null
+  }
+
+  for (const line of lines) {
+    if (lineLooksLikeJobHeader(line)) {
+      // Start a new entry only when the previous one already has bullets, so
+      // a 2-line header ("Title\nCompany — 2020-2022") doesn't open two
+      // separate jobs back-to-back.
+      if (current && current.bullets.length === 0) {
+        const range = extractDateRange(line)
+        if (range) {
+          current.startDate = current.startDate || range.start
+          current.endDate = current.endDate || range.end
+          current.currentRole = current.currentRole || range.current
+        }
+        // Augment the title/company from this second header line if needed.
+        if (!current.company) {
+          const split = splitTitleAndCompany(line)
+          if (!current.jobTitle) current.jobTitle = split.jobTitle
+          else if (split.company) current.company = split.company
+          else if (split.jobTitle && split.jobTitle !== current.jobTitle) current.company = split.jobTitle
+        }
+        continue
+      }
+
+      flush()
+      const range = extractDateRange(line)
+      const split = splitTitleAndCompany(line)
+      current = {
+        id: createId(),
+        jobTitle: split.jobTitle,
+        company: split.company,
+        location: "",
+        startDate: range?.start ?? "",
+        endDate: range?.end ?? "",
+        currentRole: range?.current ?? false,
+        bullets: [],
+      }
+      continue
+    }
+
+    // Bullet line — either explicit marker or an action-verb sentence.
+    const isBullet = BULLET_VERB_RE.test(line) || BULLET_ACTION_RE.test(line)
+    if (!isBullet) continue
+    const text = line.replace(/^[-*•]\s*/, "").trim()
+    if (text.length < 12) continue
+
+    if (!current) {
+      // Bullet before any header — start a "Recent role" placeholder.
+      current = {
+        id: createId(),
+        jobTitle: "Recent role",
+        company: "",
+        location: "",
+        startDate: "",
+        endDate: "",
+        currentRole: false,
+        bullets: [],
+      }
+    }
+    if (current.bullets.length < 8) current.bullets.push(text)
+  }
+
+  flush()
+
+  if (entries.length === 0) {
+    // No header lines matched — collect bullets globally so we still produce
+    // a usable single entry (preserves the old behavior on hard cases).
+    const fallback = lines
+      .filter((line) => BULLET_VERB_RE.test(line) || BULLET_ACTION_RE.test(line))
+      .map((line) => line.replace(/^[-*•]\s*/, "").trim())
+      .filter((line) => line.length >= 12)
+      .slice(0, 8)
+    if (fallback.length === 0) return []
+    return [
+      {
+        id: createId(),
+        jobTitle: "Experience",
+        company: "",
+        location: "",
+        startDate: "",
+        endDate: "",
+        currentRole: lines.some((line) => /present|current/i.test(line)),
+        bullets: fallback,
+      },
+    ]
+  }
+
+  return entries.slice(0, 10)
 }
 
 function parseProjects(text: string) {
-  const section = extractSection(text, ["projects"])
+  const section = extractSection(text, ["projects", "personal projects", "open source"])
   if (!section) return []
-
-  const bullets = section
-    .split("\n")
-    .map((line) => line.trim().replace(/^[-*•]\s*/, ""))
-    .filter((line) => line.length > 20)
-    .slice(0, 5)
-
-  if (bullets.length === 0) return []
-
-  return [
-    {
-      id: createId(),
-      name: "Relevant Projects",
-      description: bullets[0] ?? "",
-      technologies: ALL_SKILLS.filter((skill) => includesTerm(section, skill)).slice(0, 8),
-      bullets: bullets.slice(1),
-    },
-  ]
+  const lines = section.split("\n").map((line) => line.trim()).filter(Boolean)
+  return parseMultipleProjectEntries(lines, section)
 }
 
+/**
+ * Detect project boundaries by:
+ *  - a leading number ("1.", "2.")
+ *  - or an uppercase line (project title style) followed by a blank line or
+ *    description block
+ *  - or a colon-separated line ("ProjectName — short description")
+ * Each block becomes its own ProjectItem with its own bullets and a
+ * description derived from the first non-bullet line.
+ */
+function parseMultipleProjectEntries(lines: string[], wholeSection: string) {
+  const projects: { id: string; name: string; description: string; technologies: string[]; bullets: string[] }[] = []
+  let current: typeof projects[number] | null = null
+
+  const flush = () => {
+    if (current && (current.description || current.bullets.length > 0)) projects.push(current)
+    current = null
+  }
+
+  const looksLikeProjectHeader = (line: string) => {
+    if (!line || line.length > 120) return false
+    if (BULLET_VERB_RE.test(line)) return false
+    if (/^\d+\.\s/.test(line)) return true
+    if (/^[A-Z][A-Za-z0-9 _\-/&]{2,80}(?:\s+(?:—|–|-|:)\s+.+)?$/.test(line) && !/[.!?]$/.test(line)) {
+      // Title-cased project line, no terminal punctuation. Likely a header.
+      return true
+    }
+    return false
+  }
+
+  for (const line of lines) {
+    if (looksLikeProjectHeader(line)) {
+      flush()
+      const stripped = line.replace(/^\d+\.\s*/, "").trim()
+      const sep = stripped.split(/\s*[—–\-:]\s*/)
+      const name = sep[0]?.trim() || stripped
+      const description = sep.slice(1).join(" - ").trim()
+      current = {
+        id: createId(),
+        name,
+        description,
+        technologies: [],
+        bullets: [],
+      }
+      continue
+    }
+    const isBullet = BULLET_VERB_RE.test(line) || BULLET_ACTION_RE.test(line)
+    if (isBullet && current) {
+      const text = line.replace(/^[-*•]\s*/, "").trim()
+      if (text.length >= 12) current.bullets.push(text)
+    } else if (current && !current.description) {
+      // First descriptive line under a header becomes the description.
+      current.description = line
+    }
+  }
+  flush()
+
+  if (projects.length === 0) {
+    // No headers detected — fall back to a single "Relevant Projects" entry
+    // built from action-verb bullets (preserves the old behavior).
+    const bullets = lines
+      .map((line) => line.replace(/^[-*•]\s*/, "").trim())
+      .filter((line) => line.length > 20)
+      .slice(0, 5)
+    if (bullets.length === 0) return []
+    return [
+      {
+        id: createId(),
+        name: "Relevant Projects",
+        description: bullets[0] ?? "",
+        technologies: ALL_SKILLS.filter((skill) => includesTerm(wholeSection, skill)).slice(0, 8),
+        bullets: bullets.slice(1),
+      },
+    ]
+  }
+
+  // Per-project technology detection: scan each project's text only.
+  return projects.slice(0, 6).map((project) => {
+    const projectText = `${project.name} ${project.description} ${project.bullets.join(" ")}`
+    return {
+      ...project,
+      technologies: ALL_SKILLS.filter((skill) => includesTerm(projectText, skill)).slice(0, 6),
+    }
+  })
+}
+
+const SCHOOL_RE = /\b(university|college|institute of technology|institute|polytechnic|school)\b/i
+const DEGREE_RE =
+  /\b(bachelor|master|associate|phd|doctor|degree|bsc|b\.s\.|b\.a\.|msc|m\.s\.|m\.a\.|mba|m\.b\.a\.|b\.eng|b\.tech|m\.tech|diploma|certificate)\b/i
+
 function parseEducation(text: string) {
-  const section = extractSection(text, ["education"])
+  const section = extractSection(text, ["education", "academic background"])
   if (!section) return []
 
-  const lines = section
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-
+  const lines = section.split("\n").map((line) => line.trim()).filter(Boolean)
   if (lines.length === 0) return []
 
-  return [
-    {
-      id: createId(),
-      school: lines.find((line) => /university|college|institute|school/i.test(line)) ?? lines[0],
-      degree: lines.find((line) => /bachelor|master|associate|phd|degree|science|arts/i.test(line)) ?? "",
-      location: "",
-      graduationDate: lines.find((line) => /\b(19|20)\d{2}\b/.test(line)) ?? "",
-    },
-  ]
+  // Group lines into degree blocks. A new block starts when we hit a school
+  // or degree line AFTER having already collected one — i.e., the second
+  // school we see opens a second entry.
+  type Block = string[]
+  const blocks: Block[] = []
+  let current: Block = []
+  let hasSchool = false
+  let hasDegree = false
+
+  const flush = () => {
+    if (current.length > 0) blocks.push(current)
+    current = []
+    hasSchool = false
+    hasDegree = false
+  }
+
+  for (const line of lines) {
+    const isSchool = SCHOOL_RE.test(line)
+    const isDegree = DEGREE_RE.test(line)
+    // If the current block already has the same kind of line we just saw,
+    // assume this is a new degree.
+    if ((isSchool && hasSchool) || (isDegree && hasDegree)) {
+      flush()
+    }
+    current.push(line)
+    if (isSchool) hasSchool = true
+    if (isDegree) hasDegree = true
+  }
+  flush()
+
+  const entries = blocks
+    .map((block) => {
+      const school = block.find((line) => SCHOOL_RE.test(line)) ?? block[0]
+      const degree = block.find((line) => DEGREE_RE.test(line)) ?? ""
+      const graduationDate = block.find((line) => /\b(19|20)\d{2}\b/.test(line))?.match(/\b(19|20)\d{2}\b/)?.[0] ?? ""
+      return {
+        id: createId(),
+        school,
+        degree,
+        location: "",
+        graduationDate,
+      }
+    })
+    .filter((entry) => entry.school || entry.degree)
+
+  return entries.slice(0, 4)
 }
 
 function parseCertifications(text: string) {
@@ -577,15 +988,91 @@ export function analyzeJobDescription(input: {
   }
 }
 
+function tokenizeForTitleMatch(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]+/g, " ")
+    .split(/\s+/)
+    .filter((token) => token.length > 2 && !/^(the|and|for|with|of)$/.test(token))
+}
+
+function computeTitleRelevance(resumeText: string, jobTitle: string, roleCategory: string) {
+  if (!jobTitle) return 70
+  if (includesTerm(resumeText, jobTitle)) return 90
+  // Partial token overlap.
+  const tokens = tokenizeForTitleMatch(jobTitle)
+  if (tokens.length === 0) return 60
+  const matched = tokens.filter((token) => includesTerm(resumeText, token)).length
+  const ratio = matched / tokens.length
+  if (ratio >= 0.66) return 78
+  if (ratio >= 0.34) return 64
+  // Last resort: do we at least match the role category?
+  return includesTerm(resumeText, roleCategory) ? 56 : 48
+}
+
+function estimateTotalYears(experience: ExperienceItem[]): number {
+  // Sum every (endYear - startYear). "Present" / "current" → use the current
+  // year. Skip entries that don't have both years; do NOT double-count
+  // overlapping ranges (they're rare on real resumes and the heuristic is
+  // already a rough estimate).
+  let total = 0
+  const thisYear = new Date().getFullYear()
+  const yearRegex = /\b(19|20)\d{2}\b/
+  for (const item of experience) {
+    const startMatch = (item.startDate ?? "").match(yearRegex)
+    if (!startMatch) continue
+    const startYear = Number(startMatch[0])
+    let endYear = thisYear
+    if (item.endDate && !item.currentRole) {
+      const endMatch = item.endDate.match(yearRegex)
+      if (!endMatch) continue
+      endYear = Number(endMatch[0])
+    }
+    const yearsHere = Math.max(0, endYear - startYear)
+    total += yearsHere
+  }
+  return total
+}
+
 function inferRoleFromTitle(value: string) {
   const lower = value.toLowerCase()
-  if (lower.includes("java")) return "Java Developer"
-  if (lower.includes("data engineer")) return "Data Engineer"
-  if (lower.includes("data analyst")) return "Data Analyst"
-  if (lower.includes("business analyst")) return "Business Analyst"
-  if (lower.includes("qa")) return "QA Engineer"
-  if (lower.includes("devops")) return "DevOps Engineer"
-  if (lower.includes("product")) return "Product Manager"
+  // Order matters — match the more-specific phrases before the generic ones.
+  // Mobile + Platform engineering
+  if (/\b(ios|iphone)\b/.test(lower)) return "iOS Engineer"
+  if (/\b(android)\b/.test(lower)) return "Android Engineer"
+  if (/\bmobile (engineer|developer)\b/.test(lower)) return "Mobile Engineer"
+  // Frontend / Backend / Fullstack
+  if (/\bfull[- ]?stack\b/.test(lower)) return "Fullstack Engineer"
+  if (/\b(front[- ]?end|frontend)\b/.test(lower)) return "Frontend Engineer"
+  if (/\b(back[- ]?end|backend)\b/.test(lower)) return "Backend Engineer"
+  // Infra / Reliability / Security
+  if (/\b(sre|site reliability)\b/.test(lower)) return "SRE"
+  if (/\b(devops)\b/.test(lower)) return "DevOps Engineer"
+  if (/\b(platform engineer)\b/.test(lower)) return "Platform Engineer"
+  if (/\b(security|infosec|appsec)\b/.test(lower)) return "Security Engineer"
+  // ML / Data
+  if (/\b(ml engineer|machine learning|ai engineer)\b/.test(lower)) return "ML Engineer"
+  if (/\bdata engineer\b/.test(lower)) return "Data Engineer"
+  if (/\bdata scientist\b/.test(lower)) return "Data Scientist"
+  if (/\bdata analyst\b/.test(lower)) return "Data Analyst"
+  // QA
+  if (/\b(qa|quality engineer|sdet|test engineer)\b/.test(lower)) return "QA Engineer"
+  // Business / Product
+  if (/\bbusiness analyst\b/.test(lower)) return "Business Analyst"
+  if (/\bproduct manager\b/.test(lower)) return "Product Manager"
+  if (/\bproduct owner\b/.test(lower)) return "Product Owner"
+  if (/\b(project manager|program manager|tpm)\b/.test(lower)) return "Project Manager"
+  // Design / Content / GTM
+  if (/\b(ux|ui|product designer|interaction designer)\b/.test(lower)) return "Designer"
+  if (/\b(content|copywriter|technical writer)\b/.test(lower)) return "Content / Writer"
+  if (/\b(marketing|growth|seo|brand)\b/.test(lower)) return "Marketer"
+  if (/\b(sales engineer|solutions engineer)\b/.test(lower)) return "Sales Engineer"
+  if (/\b(customer success|csm)\b/.test(lower)) return "Customer Success"
+  // Language-tagged backends
+  if (/\b(java developer|java engineer)\b/.test(lower)) return "Java Developer"
+  if (/\b(python developer|python engineer)\b/.test(lower)) return "Python Developer"
+  if (/\b(go(?:lang)? developer|golang)\b/.test(lower)) return "Go Developer"
+  // Generic catch-all
   return "Software Engineer"
 }
 
@@ -606,12 +1093,27 @@ function inferCompanyFromText(text: string) {
 
 function inferExperienceLevel(text: string) {
   const years = [...text.matchAll(/(\d+)\+?\s*(?:years|yrs)/gi)].map((match) => Number(match[1]))
-  const maxYears = years.length > 0 ? Math.max(...years) : 0
+  const maxYears = years.length > 0 ? Math.max(...years) : null
   const lower = text.toLowerCase()
 
-  if (lower.includes("entry level") || lower.includes("junior") || maxYears <= 2) return "Entry-level (0-2y)"
-  if (lower.includes("senior") || maxYears >= 6) return "Senior (6y+)"
-  if (lower.includes("lead") || lower.includes("principal") || lower.includes("staff")) return "Senior (6y+)"
+  // Check seniority cues BEFORE falling back to year count so a JD that says
+  // "Senior Engineer" without an explicit number isn't mis-classified as
+  // Entry-level (previously defaulted to 0 years and matched maxYears <= 2).
+  if (
+    lower.includes("senior") ||
+    lower.includes("staff") ||
+    lower.includes("principal") ||
+    lower.includes("lead")
+  ) {
+    return "Senior (6y+)"
+  }
+  if (lower.includes("entry level") || lower.includes("junior") || lower.includes("intern")) {
+    return "Entry-level (0-2y)"
+  }
+  if (maxYears !== null) {
+    if (maxYears >= 6) return "Senior (6y+)"
+    if (maxYears <= 2) return "Entry-level (0-2y)"
+  }
   return "Mid-level (3-5y)"
 }
 
@@ -628,6 +1130,45 @@ function inferLocation(text: string) {
   return match?.[1]?.split("\n")[0]?.trim() ?? ""
 }
 
+// JD-specific section headings used to delimit the "required" / "preferred" /
+// "responsibilities" blocks in a job description. The previous implementation
+// reused the resume-side isHeading() list, which never matches JD content and
+// caused the collector to run to the end of the doc — putting nearly every
+// detected skill in "required" with "preferred" always empty.
+const JD_SECTION_HEADINGS = [
+  "required",
+  "requirements",
+  "must have",
+  "must-have",
+  "minimum qualifications",
+  "preferred",
+  "preferred qualifications",
+  "nice to have",
+  "nice-to-have",
+  "bonus",
+  "plus",
+  "responsibilities",
+  "what you will do",
+  "what you'll do",
+  "duties",
+  "qualifications",
+  "what we offer",
+  "benefits",
+  "about us",
+  "about the role",
+  "about you",
+  "who you are",
+  "day in the life",
+  "the role",
+  "the team",
+]
+
+function isJdHeading(line: string) {
+  const clean = canonical(line)
+  if (clean.length > 60) return false
+  return JD_SECTION_HEADINGS.some((heading) => clean === canonical(heading) || clean.startsWith(`${canonical(heading)} `))
+}
+
 function collectLinesNear(text: string, markers: string[]) {
   const lines = text.split("\n")
   const collected: string[] = []
@@ -635,9 +1176,16 @@ function collectLinesNear(text: string, markers: string[]) {
 
   for (const line of lines) {
     const lower = line.toLowerCase()
-    if (markers.some((marker) => lower.includes(marker))) active = true
+    const isMatch = markers.some((marker) => lower.includes(marker))
+    if (isMatch) {
+      active = true
+      collected.push(line)
+      continue
+    }
+    // Once we're collecting, stop at the next JD heading that isn't one of
+    // our own markers — that's where the next section begins.
+    if (active && isJdHeading(line)) break
     if (active) collected.push(line)
-    if (active && collected.length > 10 && isHeading(line)) break
   }
 
   return collected.join("\n")
@@ -684,13 +1232,33 @@ export function scoreResumeAgainstJob(resumeText: string, profile: StructuredRes
     profile.workExperience.length > 0,
     profile.education.length > 0,
   ].filter(Boolean).length
-  const formattingCompleteness = clampScore(65 + sectionSignals * 8 + Math.min(profile.workExperience.length, 2) * 5)
-  const titleRelevance = analysis.jobTitle
-    ? includesTerm(resumeText, analysis.jobTitle) || includesTerm(resumeText, analysis.roleCategory)
-      ? 85
-      : 55
-    : 70
-  const experienceRelevance = profile.workExperience.length > 0 ? 78 : 45
+
+  // Formatting completeness reflects (a) presence of all four expected
+  // sections and (b) signs that the work-experience parser found multiple
+  // entries with bullets — a proxy for "the resume parses cleanly into a
+  // structured document" which is what ATS systems care about.
+  const totalBullets = profile.workExperience.reduce((sum, item) => sum + (item.bullets?.length ?? 0), 0)
+  const formattingCompleteness = clampScore(
+    55 +
+      sectionSignals * 8 +
+      Math.min(profile.workExperience.length, 5) * 3 +
+      Math.min(totalBullets, 20),
+  )
+
+  // Title relevance has partial credit now: full overlap → 90, partial
+  // token overlap → 70, none → 50, and an explicit role-category fallback.
+  const titleRelevance = computeTitleRelevance(resumeText, analysis.jobTitle, analysis.roleCategory)
+
+  // Experience relevance scales with total years of work history (capped at
+  // 12y for scoring purposes). Falls back to the binary "any experience"
+  // signal when no dates were parsed.
+  const yearsTotal = estimateTotalYears(profile.workExperience)
+  const experienceRelevance =
+    profile.workExperience.length === 0
+      ? 45
+      : yearsTotal > 0
+        ? clampScore(60 + Math.min(yearsTotal, 12) * 2)
+        : 72  // experience present but dates didn't parse cleanly
 
   const breakdown: ScoreBreakdown = {
     requiredSkillsMatch: percentage(requiredMatched, analysis.requiredSkills.length),
@@ -879,52 +1447,46 @@ function addSkillToProfile(profile: StructuredResumeProfile, skill: string) {
 }
 
 function buildTailoredSummary(profile: StructuredResumeProfile, title: string, matchedRequired: string[]) {
-  const nameOrRole = title || "target role"
+  // The previous summary asserted "candidate with demonstrated experience in
+  // <skills>" — a forward-looking marketing claim the original resume may
+  // never have made. Preserve the user's own summary instead and surface the
+  // role/skills context as a short prefix only.
+  const userSummary = profile.summary?.trim() || ""
+  const role = title?.trim() || ""
   const skills = matchedRequired.slice(0, 5).join(", ")
-  const existing = profile.summary || "Professional with experience delivering practical, business-focused work."
-  const firstSentence = existing.split(/[.!?]/)[0]?.trim()
 
-  if (skills) {
-    return `${nameOrRole} candidate with demonstrated experience in ${skills}. ${firstSentence}. Focused on clear, ATS-friendly communication and role-relevant impact.`
+  if (userSummary) {
+    // Keep the user's voice as written.
+    return userSummary
   }
 
-  return `${nameOrRole} candidate with a background aligned to the role requirements. ${firstSentence}.`
+  // No existing summary — produce a neutral one-liner using only verifiable
+  // facts (the role name they're applying for, and supported keywords already
+  // in their profile via matchedRequired).
+  if (role && skills) {
+    return `Applying for ${role}. Background includes ${skills}.`
+  }
+  if (role) return `Applying for ${role}.`
+  return ""
 }
 
 function reorderAndTuneExperience(
   experience: ExperienceItem[],
   matchedRequired: string[],
-  changeLog: ChangeLogItem[]
+  _changeLog: ChangeLogItem[]
 ) {
+  // Previously we appended ", with emphasis on <skill>." to every bullet that
+  // didn't mention a matched-required skill — keyword stuffing that read as
+  // spam, and inflated the tailored score by self-fulfillingly inserting the
+  // very keywords we then graded. Now we only reorder bullets so the most
+  // JD-aligned ones move to the top; the bullets themselves are untouched.
   return experience.map((item) => {
     const sortedBullets = [...item.bullets].sort((a, b) => {
       const scoreA = matchedRequired.filter((skill) => includesTerm(a, skill)).length
       const scoreB = matchedRequired.filter((skill) => includesTerm(b, skill)).length
       return scoreB - scoreA
     })
-    const tunedBullets = sortedBullets.map((bullet) => {
-      const missingSupportedSkill = matchedRequired.find((skill) => !includesTerm(bullet, skill))
-      if (!missingSupportedSkill || sortedBullets.some((other) => includesTerm(other, missingSupportedSkill))) {
-        return bullet
-      }
-
-      const tuned = `${bullet.replace(/\.$/, "")}, with emphasis on ${missingSupportedSkill}.`
-      changeLog.push({
-        id: createId(),
-        label: "reworded_from_existing",
-        section: "Experience",
-        keyword: missingSupportedSkill,
-        before: bullet,
-        after: tuned,
-        reason: `Added a supported keyword already present in the master profile to improve alignment.`,
-      })
-      return tuned
-    })
-
-    return {
-      ...item,
-      bullets: tunedBullets,
-    }
+    return { ...item, bullets: sortedBullets }
   })
 }
 
@@ -1080,7 +1642,21 @@ export function buildKeywordScan(input: { resumeText: string; targetRole?: strin
   const commonRoleSkills = ALL_SKILLS.filter((skill) =>
     roleTerms.some((term) => includesTerm(`${term} ${targetRole}`, skill))
   )
-  const missing = unique([...commonRoleSkills, "REST APIs", "Git", "Agile", "Cloud"].filter((skill) => !includesTerm(input.resumeText, skill))).slice(0, 8)
+  // Always-include keywords used to be REST APIs / Git / Agile / Cloud for
+  // every role — irrelevant for marketers, designers, sales-engineers, data
+  // scientists. Make them role-conditional so we don't tell a designer they're
+  // missing "Git".
+  const lowerRole = targetRole.toLowerCase()
+  const isEngineerRole =
+    /engineer|developer|programmer|swe|architect|sre|devops|backend|frontend|full[- ]?stack/.test(
+      lowerRole,
+    )
+  const alwaysInclude = isEngineerRole ? ["REST APIs", "Git", "Agile", "Cloud"] : []
+  const missing = unique(
+    [...commonRoleSkills, ...alwaysInclude].filter(
+      (skill) => !includesTerm(input.resumeText, skill),
+    ),
+  ).slice(0, 8)
 
   return {
     targetRole,
@@ -1113,8 +1689,12 @@ export function buildSalaryEstimate(input: {
         : role.toLowerCase().includes("product")
           ? 110000
           : 82000
+  // Parse the years as a number rather than substring-matching "10"/"6"/"3",
+  // which previously misclassified "13 years" as the 3-5 band and "16 years"
+  // as the 6-9 band instead of the 10+ band.
+  const yearsNumber = Number(input.yearsExperience.match(/\d+/)?.[0] ?? 0)
   const experienceBoost =
-    input.yearsExperience.includes("10") ? 42000 : input.yearsExperience.includes("6") ? 27000 : input.yearsExperience.includes("3") ? 12000 : 0
+    yearsNumber >= 10 ? 42000 : yearsNumber >= 6 ? 27000 : yearsNumber >= 3 ? 12000 : 0
   const locationBoost = /san francisco|new york|seattle|bay area|boston/i.test(input.location)
     ? 22000
     : /dallas|austin|chicago|atlanta|denver/i.test(input.location)

@@ -3,6 +3,7 @@
 import Script from "next/script"
 import { createContext, useContext, useEffect, useState } from "react"
 import { ADSENSE_CLIENT_ID, ADSENSE_ENABLED, isAdFree } from "@/lib/ads"
+import { useConsent } from "@/components/consent/useConsent"
 import type { Subscription } from "@/lib/rolefit-types"
 
 type AdsContextValue = {
@@ -24,13 +25,16 @@ export function useAds() {
  * only for ad-supported viewers. Wrap marketing content with this provider.
  */
 export function AdsProvider({ children }: { children: React.ReactNode }) {
-  const [adFree, setAdFree] = useState(false)
-  // When ads are unconfigured we are already "resolved" (nothing to fetch).
-  const [resolved, setResolved] = useState(!ADSENSE_ENABLED)
+  const { consent, ready: consentReady } = useConsent()
+  // null until the subscription check completes; true/false once it resolves.
+  const [subscriptionAdFree, setSubscriptionAdFree] = useState<boolean | null>(null)
+
+  // Only look up the viewer's subscription once ads are configured AND the
+  // viewer has explicitly accepted cookies. Until then no AdSense script loads.
+  const shouldCheckSubscription = ADSENSE_ENABLED && consentReady && consent === "accepted"
 
   useEffect(() => {
-    // No client id => ads are off entirely; skip the network call.
-    if (!ADSENSE_ENABLED) return
+    if (!shouldCheckSubscription) return
 
     let active = true
 
@@ -39,19 +43,21 @@ export function AdsProvider({ children }: { children: React.ReactNode }) {
       .then((payload) => {
         if (!active) return
         const subscription = payload?.data?.subscription as Subscription | null | undefined
-        setAdFree(isAdFree(subscription))
-        setResolved(true)
+        setSubscriptionAdFree(isAdFree(subscription))
       })
       .catch(() => {
-        if (active) setResolved(true)
+        if (active) setSubscriptionAdFree(false)
       })
 
     return () => {
       active = false
     }
-  }, [])
+  }, [shouldCheckSubscription])
 
-  const adsEnabled = ADSENSE_ENABLED && !adFree
+  // Resolved synchronously in every case except while the subscription check
+  // is in flight, so AdSlots never flash before we know the viewer's state.
+  const resolved = !shouldCheckSubscription || subscriptionAdFree !== null
+  const adsEnabled = shouldCheckSubscription && subscriptionAdFree === false
 
   return (
     <AdsContext.Provider value={{ adsEnabled, resolved }}>

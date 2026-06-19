@@ -28,15 +28,17 @@ Tune your resume to every job — instant ATS score, keyword gap scan, and AI bu
 
 ### Detailed description (paste verbatim)
 ```
-HireTuner is an AI-powered Chrome extension that helps job seekers beat ATS filters and land more interviews.
+HireTuner is a Chrome extension that helps job seekers beat ATS filters by analyzing how well a resume matches any given job description — directly from the job posting.
 
-Paste your resume once, then extract any LinkedIn / Indeed / Glassdoor / Monster / Dice job description with one click and get an instant analysis:
+Paste your resume once, then extract a job description from LinkedIn / Indeed / Glassdoor / Greenhouse / Lever / Workday / Workable / Ashby with one click and get an instant analysis:
 
-  • ATS Compatibility Score — see exactly how a typical ATS will rank your resume against the role.
-  • Keyword Gap Scan — every required and preferred skill in the JD, marked as Found, Reworded, Needs Confirmation, or Not Added.
+  • ATS Compatibility Score — an estimated score showing how a typical ATS will rank your resume against the role.
+  • Keyword Gap Scan — every required and preferred skill detected in the JD, marked as Found, Found-but-Weak, Needs Confirmation, or Missing.
   • Resume Match — directional match score with a breakdown across required skills, responsibilities, experience, and formatting.
-  • Bullet Point Generator — transform weak resume bullets into high-impact, metrics-driven achievements.
-  • Interview Questions — likely interview questions generated from the job description.
+  • Bullet Point Suggestions — keyword-aware suggestions for rewording existing bullets to mirror JD language without inventing experience.
+  • Interview Questions — likely interview questions derived from the job description.
+
+Note: HireTuner extracts job descriptions and runs ATS analysis. It does NOT autofill or auto-submit applications. Those features are on the roadmap.
 
 The extension talks to the HireTuner web app (https://hiretuner.com) over HTTPS. Sign in with Google through Firebase to unlock your Starter plan quota (up to 100 tailored resumes per month).
 
@@ -47,7 +49,7 @@ Your data:
 
 Pricing:
   • Free tier: 5 resume matches per month, basic ATS keyword gap.
-  • Starter: $5.49/mo or $49.99/yr — 100 tailored resumes per month, advanced AI rewriting engine, master resume management, application tracker.
+  • Starter: $5.49/mo or $49.99/yr — 100 tailored resumes per month, resume tailoring engine, master resume management, application tracker.
 
 Read our Privacy Policy: https://hiretuner.com/privacy-policy
 Terms of Service: https://hiretuner.com/terms-of-service
@@ -75,7 +77,7 @@ English (United States)
 
 ### Single purpose (paste verbatim)
 ```
-Extract the job description from the user's currently-open job-site tab and run an AI-powered ATS / keyword-gap / resume-match analysis against the user's stored resume via the HireTuner web service.
+Extract the job description from the user's currently-open job-site tab and run a heuristic ATS / keyword-gap / resume-match analysis against the user's stored resume via the HireTuner web service.
 ```
 
 ### Permission justifications (one per declared permission)

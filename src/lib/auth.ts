@@ -20,7 +20,16 @@ export const SESSION_COOKIE = "rolefit_session"
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30
 
 function getAuthSecret() {
-  return process.env.AUTH_SECRET || "replace-me-with-a-long-random-auth-secret"
+  const secret = process.env.AUTH_SECRET
+  // Fail closed: a missing or placeholder AUTH_SECRET would let anyone read
+  // the source forge any session cookie. Refuse to operate without one.
+  if (!secret || secret.length < 32 || secret.toLowerCase().includes("replace")) {
+    throw new Error(
+      "AUTH_SECRET must be set to a 32+ character random value (no placeholder). " +
+        "Generate with: openssl rand -base64 32",
+    )
+  }
+  return secret
 }
 
 function signSessionId(sessionId: string) {
@@ -68,12 +77,28 @@ export function validateEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim().toLowerCase())
 }
 
+// Tiny common-password blocklist (top breached passwords; extend or replace
+// with a HIBP k-anonymity lookup later). Lowercased for comparison.
+const COMMON_PASSWORDS = new Set([
+  "password", "password1", "password12", "password123", "passw0rd",
+  "qwerty", "qwerty123", "qwertyuiop", "abc12345", "abcd1234",
+  "welcome", "welcome1", "welcome123", "letmein", "letmein1",
+  "iloveyou", "monkey123", "sunshine", "princess", "dragon123",
+  "admin1234", "admin123", "starwars", "football", "baseball",
+  "trustno1", "michael1", "shadow123", "test1234", "hello123",
+  "12345678", "123456789", "1234567890", "01234567", "11111111",
+  "00000000", "qwertyui", "asdfghjk", "zxcvbnm1",
+])
+
 export function validatePassword(password: string) {
   const errors: string[] = []
 
   if (password.length < 8) errors.push("Password must be at least 8 characters.")
   if (!/[A-Za-z]/.test(password)) errors.push("Password must include a letter.")
   if (!/[0-9]/.test(password)) errors.push("Password must include a number.")
+  if (COMMON_PASSWORDS.has(password.toLowerCase())) {
+    errors.push("That password appears on common-password lists. Pick something less guessable.")
+  }
 
   return errors
 }
@@ -143,9 +168,9 @@ export async function clearSessionCookie() {
 export async function createSessionForUser(userId: string) {
   const session = createSessionRecord(userId)
   updateDatabase((database) => {
-    database.sessions = database.sessions.filter(
-      (item) => item.userId !== userId || new Date(item.expiresAt).getTime() > Date.now()
-    )
+    // Single-session policy: on every successful login, invalidate ALL prior
+    // sessions for this user so a stolen cookie doesn't outlive a re-login.
+    database.sessions = database.sessions.filter((item) => item.userId !== userId)
     database.sessions.push(session)
   })
   await setSessionCookie(session)

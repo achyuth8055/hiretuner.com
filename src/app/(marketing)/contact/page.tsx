@@ -1,13 +1,13 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
-import { pageMetadata } from "@/lib/seo"
+import { pageMetadata, JsonLd, breadcrumbLd, webPageLd } from "@/lib/seo"
 
-export const metadata = pageMetadata({
-  title: "Contact & Support: HireTuner",
-  description:
-    "Get in touch with the HireTuner team. Find support options, billing and privacy answers, and resources to get more from our AI resume tailoring tools.",
-  path: "/contact",
-})
+const TITLE = "Contact & Support: HireTuner"
+const DESCRIPTION =
+  "Get in touch with the HireTuner team. Find support options, billing and privacy answers, and resources to get more from our AI resume tailoring tools."
+const PATH = "/contact"
+
+export const metadata = pageMetadata({ title: TITLE, description: DESCRIPTION, path: PATH })
 
 const SUPPORT_FAQ = [
   {
@@ -35,6 +35,8 @@ const SUPPORT_FAQ = [
 export default function Contact() {
   return (
     <div className="max-w-[800px] mx-auto px-margin-page py-stack-xl flex flex-col gap-stack-xl">
+      <JsonLd data={breadcrumbLd([{ name: "Contact", path: PATH }])} />
+      <JsonLd data={webPageLd({ name: TITLE, description: DESCRIPTION, path: PATH, type: "ContactPage" })} />
       <header className="flex flex-col gap-stack-md">
         <span className="font-label-uppercase text-label-uppercase text-secondary tracking-widest">We&apos;re here to help</span>
         <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary">

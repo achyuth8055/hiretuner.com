@@ -124,3 +124,75 @@ body {
     line-height: 20px;
   }
 }
+
+/*
+ * Long-form content styling for legal / policy pages (Privacy, Cookie, Terms).
+ * These pages mark up their body with `prose`, but the project uses Tailwind v4
+ * with no @tailwindcss/typography plugin, so `prose` carries no styles on its
+ * own. This block gives that content readable structure — heading sizes,
+ * paragraph rhythm, lists, links — using the site's own design tokens so it
+ * matches the rest of the UI instead of pulling in mismatched plugin defaults.
+ */
+@layer components {
+  .prose {
+    font-family: var(--font-inter);
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--color-on-surface-variant);
+  }
+
+  .prose > :first-child {
+    margin-top: 0;
+  }
+
+  .prose h2 {
+    font-family: var(--font-geist);
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 32px;
+    letter-spacing: -0.01em;
+    color: var(--color-primary);
+    margin-top: var(--spacing-stack-xl);
+    margin-bottom: var(--spacing-stack-md);
+  }
+
+  .prose h3 {
+    font-family: var(--font-geist);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 28px;
+    color: var(--color-on-surface);
+    margin-top: var(--spacing-stack-lg);
+    margin-bottom: var(--spacing-stack-sm);
+  }
+
+  .prose p {
+    margin-bottom: var(--spacing-stack-md);
+  }
+
+  .prose ul {
+    list-style: disc;
+    padding-left: var(--spacing-stack-lg);
+    margin-top: var(--spacing-stack-md);
+    margin-bottom: var(--spacing-stack-md);
+  }
+
+  .prose li {
+    margin-bottom: var(--spacing-stack-sm);
+  }
+
+  .prose strong {
+    font-weight: 600;
+    color: var(--color-on-surface);
+  }
+
+  .prose a {
+    color: var(--color-secondary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .prose a:hover {
+    color: var(--color-secondary-container);
+  }
+}

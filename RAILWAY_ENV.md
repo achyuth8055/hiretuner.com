@@ -10,7 +10,8 @@ already created separate Stripe/Firebase projects per environment.
 
 ```
 NEXT_PUBLIC_APP_URL=https://hiretuner.com
-AUTH_SECRET=Ozrg_pLeY50LRWrPVhgxWck0CnfTSAr4t6u4-eyQenQkE_8MrFAS2kmjsYryjrZV
+# Generate a fresh one: `openssl rand -base64 48` — do NOT commit the real value.
+AUTH_SECRET=REPLACE_WITH_A_FRESHLY_GENERATED_SECRET
 
 NODE_ENV=production
 
@@ -63,6 +64,8 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_REPLACE_OR_pk_live_REPLACE
 STRIPE_WEBHOOK_SECRET=whsec_REPLACE_AFTER_CREATING_WEBHOOK_ENDPOINT
 STRIPE_STARTER_PRICE_ID=price_REPLACE_MONTHLY
 STRIPE_STARTER_YEARLY_PRICE_ID=price_REPLACE_YEARLY
+STRIPE_PRO_PRICE_ID=price_REPLACE_PRO_MONTHLY
+STRIPE_PRO_YEARLY_PRICE_ID=price_REPLACE_PRO_YEARLY
 ```
 
 **To create the price IDs:**
@@ -73,6 +76,10 @@ STRIPE_STARTER_YEARLY_PRICE_ID=price_REPLACE_YEARLY
    `STRIPE_STARTER_PRICE_ID`.
 4. On the same product, add a second price: **$49.99 / year**, recurring. Copy that
    `price_...` ID into `STRIPE_STARTER_YEARLY_PRICE_ID`.
+5. Add a second product `HireTuner Pro`. Description: "Unlimited usage, ad-free."
+6. Add a price: **$9.99 / month**, recurring → `STRIPE_PRO_PRICE_ID`.
+7. On the same product, add **$120 / year**, recurring (this is the "Max" tier) →
+   `STRIPE_PRO_YEARLY_PRICE_ID`.
 
 **To create the webhook (after deploying):**
 

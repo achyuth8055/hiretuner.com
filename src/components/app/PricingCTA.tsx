@@ -4,9 +4,11 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 
 type Interval = "monthly" | "yearly"
+type Plan = "starter" | "pro"
 
 type PricingCTAProps = {
   interval: Interval
+  plan?: Plan
   className?: string
   children: React.ReactNode
 }
@@ -24,7 +26,7 @@ const INTENT_KEY = "rolefit_pending_upgrade"
  *     and route the user to /signup. The signup page reads the intent and
  *     auto-starts checkout after the new account is created.
  */
-export function PricingCTA({ interval, className, children }: PricingCTAProps) {
+export function PricingCTA({ interval, plan = "starter", className, children }: PricingCTAProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
@@ -42,10 +44,10 @@ export function PricingCTA({ interval, className, children }: PricingCTAProps) {
         if (typeof window !== "undefined") {
           window.sessionStorage.setItem(
             INTENT_KEY,
-            JSON.stringify({ plan: "starter", interval }),
+            JSON.stringify({ plan, interval }),
           )
         }
-        router.push(`/signup?plan=starter&interval=${interval}`)
+        router.push(`/signup?plan=${plan}&interval=${interval}`)
         return
       }
 
@@ -60,7 +62,7 @@ export function PricingCTA({ interval, className, children }: PricingCTAProps) {
       const checkoutResponse = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ interval }),
+        body: JSON.stringify({ plan, interval }),
       })
       const json = (await checkoutResponse.json()) as {
         ok?: boolean

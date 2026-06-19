@@ -1,12 +1,13 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
-import { pageMetadata } from "@/lib/seo"
+import { pageMetadata, JsonLd, breadcrumbLd, webApplicationLd } from "@/lib/seo"
 
-export const metadata = pageMetadata({
-  title: "Job Application Tracker",
-  description: "Track every job application in one place: companies, roles, statuses, resume versions, match scores, notes, and follow-up dates so nothing slips away.",
-  path: "/job-application-tracker",
-})
+const TITLE = "Job Application Tracker"
+const DESCRIPTION =
+  "Track every job application in one place: companies, roles, statuses, resume versions, match scores, notes, and follow-up dates so nothing slips away."
+const PATH = "/job-application-tracker"
+
+export const metadata = pageMetadata({ title: TITLE, description: DESCRIPTION, path: PATH })
 
 const sampleRows = [
   ["Acme Health", "Java Developer", "Applied", "v3", "84%", "Follow up next week"],
@@ -17,6 +18,8 @@ const sampleRows = [
 export default function JobApplicationTrackerPage() {
   return (
     <main className="flex-grow w-full max-w-[1200px] mx-auto px-margin-page py-12 md:py-24">
+      <JsonLd data={breadcrumbLd([{ name: "Job Application Tracker", path: PATH }])} />
+      <JsonLd data={webApplicationLd({ name: TITLE, description: DESCRIPTION, path: PATH })} />
       <div className="text-center mb-16 max-w-3xl mx-auto">
         <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-6">
           Job Application Tracker

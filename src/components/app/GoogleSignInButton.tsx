@@ -57,12 +57,16 @@ export function GoogleSignInButton({ className }: { className?: string }) {
       if (intentRaw) {
         window.sessionStorage.removeItem(PRICING_INTENT_KEY)
         try {
-          const intent = JSON.parse(intentRaw) as { interval?: "monthly" | "yearly" }
+          const intent = JSON.parse(intentRaw) as {
+            interval?: "monthly" | "yearly"
+            plan?: "starter" | "pro"
+          }
           const interval = intent.interval === "yearly" ? "yearly" : "monthly"
+          const plan = intent.plan === "pro" ? "pro" : "starter"
           const checkout = await fetch("/api/billing/checkout", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ interval }),
+            body: JSON.stringify({ plan, interval }),
           })
           const checkoutJson = (await checkout.json()) as {
             ok?: boolean

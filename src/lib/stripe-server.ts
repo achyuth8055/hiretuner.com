@@ -28,9 +28,26 @@ export function getStripe(): Stripe | null {
   return cached
 }
 
-export function priceIdForInterval(interval: "monthly" | "yearly") {
-  if (interval === "yearly") {
-    return process.env.STRIPE_STARTER_YEARLY_PRICE_ID || null
+// Plans that can be purchased via Stripe checkout. "pro" maps to the
+// $9.99/mo plan; its yearly variant ($120/yr) is marketed as "Max".
+export type CheckoutPlan = "starter" | "pro"
+
+export function priceIdForPlan(plan: CheckoutPlan, interval: "monthly" | "yearly") {
+  if (plan === "pro") {
+    return (
+      (interval === "yearly"
+        ? process.env.STRIPE_PRO_YEARLY_PRICE_ID
+        : process.env.STRIPE_PRO_PRICE_ID) || null
+    )
   }
-  return process.env.STRIPE_STARTER_PRICE_ID || null
+  return (
+    (interval === "yearly"
+      ? process.env.STRIPE_STARTER_YEARLY_PRICE_ID
+      : process.env.STRIPE_STARTER_PRICE_ID) || null
+  )
+}
+
+/** @deprecated use priceIdForPlan("starter", interval). Kept for compatibility. */
+export function priceIdForInterval(interval: "monthly" | "yearly") {
+  return priceIdForPlan("starter", interval)
 }

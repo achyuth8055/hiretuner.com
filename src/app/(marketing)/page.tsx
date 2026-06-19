@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/Button"
 import Link from "next/link"
 import Image from "next/image"
 import { AdSlot } from "@/components/ads/AdSlot"
-import { PricingCTA } from "@/components/app/PricingCTA"
+import { PricingPlans } from "@/components/app/PricingPlans"
 import { JsonLd } from "@/lib/seo"
 import { siteConfig } from "@/lib/site"
 
@@ -21,11 +21,11 @@ const FAQ_ITEMS = [
   },
   {
     q: "How much does HireTuner cost?",
-    a: "HireTuner is free to try with 5 resume matches per month. The Starter plan is $5.49/month (or $49.99/year) and includes up to 100 tailored resumes per month, the advanced AI rewriting engine, master resume management, and the application tracker. Yearly subscribers also get an ad-free experience.",
+    a: "HireTuner is free to try with 5 resume matches per month. The Starter plan is $5.49/month (or $49.99/year) and includes up to 100 tailored resumes per month, the resume tailoring engine, master resume management, and the application tracker. The Pro plan is $9.99/month (or $120/year, billed as Max) and adds unlimited usage and a completely ad-free experience.",
   },
   {
     q: "Do I see ads on HireTuner?",
-    a: "Free and monthly Starter users may see a small number of clearly-labeled ads that help keep the free tools available. Annual subscribers and Plus members enjoy a completely ad-free experience.",
+    a: "Free and Starter users may see a small number of clearly-labeled ads that help keep the free tools available. Pro members (monthly or yearly) enjoy a completely ad-free experience.",
   },
   {
     q: "Which file formats can I upload?",
@@ -52,15 +52,15 @@ export default function Home() {
     operatingSystem: "Web",
     description: siteConfig.description,
     offers: [
-      { "@type": "Offer", price: "0", priceCurrency: "USD", name: "Free" },
+      { "@type": "Offer", price: "0", priceCurrency: "USD", name: "Basic (Free)" },
       { "@type": "Offer", price: "5.49", priceCurrency: "USD", name: "Starter (Monthly)" },
       { "@type": "Offer", price: "49.99", priceCurrency: "USD", name: "Starter (Yearly)" },
+      { "@type": "Offer", price: "9.99", priceCurrency: "USD", name: "Pro (Monthly)" },
+      { "@type": "Offer", price: "120", priceCurrency: "USD", name: "Pro / Max (Yearly)" },
     ],
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      reviewCount: "1200",
-    },
+    // aggregateRating intentionally omitted during beta — the product hasn't
+    // accumulated real review counts and Google Search Console flags fabricated
+    // ratings. Re-enable once we have verifiable reviews.
   }
 
   return (
@@ -71,11 +71,15 @@ export default function Home() {
       <header className="w-full max-w-[1200px] mx-auto px-margin-page py-stack-xl md:py-24 grid grid-cols-1 md:grid-cols-2 gap-gutter items-center overflow-hidden">
         {/* Left: Copy */}
         <div className="flex flex-col gap-stack-lg z-10">
+          <div className="inline-flex items-center gap-2 self-start bg-secondary-fixed/30 text-primary px-3 py-1 rounded-full border border-secondary-fixed/40">
+            <span className="material-symbols-outlined text-[14px]">science</span>
+            <span className="font-label-uppercase text-[11px] tracking-wider">Beta — Free during launch</span>
+          </div>
           <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary">
             Tailor your resume to <span className="text-secondary">any job description</span> in minutes.
           </h1>
           <p className="font-body-base text-body-base text-on-surface-variant max-w-md">
-            Stop guessing what ATS filters want. HireTuner&apos;s AI analyzes the JD, identifies critical keyword gaps, and precision-rewrites your experience to maximize your match score.
+            HireTuner reads the JD, surfaces the keywords your resume is missing, and helps you reorder your strongest bullets toward what matters — without inventing experience you don&apos;t have.
           </p>
           <div className="flex flex-col sm:flex-row gap-stack-md pt-stack-sm">
             <Button size="lg" className="gap-2" asChild>
@@ -402,7 +406,7 @@ export default function Home() {
             </div>
           </Link>
 
-          {/* Salary Estimator & Java Guide (Half cards) */}
+          {/* Salary Estimator & Salary Guides (Half cards) */}
           <div className="flex flex-col gap-gutter lg:col-span-1 md:col-span-2">
             <Link href="/salary-estimator" className="flex-1 bg-surface-container-lowest p-stack-md rounded-3xl border border-outline-variant/30 shadow-sm hover:border-secondary hover:shadow-md transition-all group flex items-center gap-4">
               <div className="w-12 h-12 bg-primary-fixed text-on-primary-fixed rounded-xl flex items-center justify-center shrink-0 group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
@@ -413,13 +417,13 @@ export default function Home() {
                 <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">Uncover your earning potential.</p>
               </div>
             </Link>
-            <Link href="/java-developer-salary-guide" className="flex-1 bg-surface-container-lowest p-stack-md rounded-3xl border border-outline-variant/30 shadow-sm hover:border-secondary hover:shadow-md transition-all group flex items-center gap-4">
+            <Link href="/salary-guide" className="flex-1 bg-surface-container-lowest p-stack-md rounded-3xl border border-outline-variant/30 shadow-sm hover:border-secondary hover:shadow-md transition-all group flex items-center gap-4">
               <div className="w-12 h-12 bg-surface-variant text-on-surface-variant rounded-xl flex items-center justify-center shrink-0 group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
-                <span className="material-symbols-outlined">code</span>
+                <span className="material-symbols-outlined">trending_up</span>
               </div>
               <div>
-                <h3 className="font-headline-md text-headline-md text-primary group-hover:text-secondary mb-1 text-base font-bold">Java Dev Salary Guide</h3>
-                <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">Market rates for Java roles.</p>
+                <h3 className="font-headline-md text-headline-md text-primary group-hover:text-secondary mb-1 text-base font-bold">Salary Guides</h3>
+                <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">Market rates across every tech stream.</p>
               </div>
             </Link>
           </div>
@@ -441,7 +445,7 @@ export default function Home() {
             </div>
             <h2 className="font-headline-md text-headline-md md:text-4xl text-on-primary">Take HireTuner Everywhere</h2>
             <p className="font-body-base text-body-base text-inverse-primary max-w-lg">
-              Analyze job descriptions and instantly generate tailored resumes directly from LinkedIn, Indeed, and Glassdoor with our free Chrome Extension.
+              Extract the job description with one click from LinkedIn, Indeed, Glassdoor, Greenhouse, Lever, Workday and more — then run an ATS-style analysis against your stored resume right in the popup.
             </p>
             <div className="flex gap-4 mt-4">
               <Button size="lg" className="gap-2 bg-on-primary text-primary hover:bg-surface-variant">
@@ -553,80 +557,10 @@ export default function Home() {
         <div className="text-center mb-stack-xl">
           <h2 className="font-headline-md text-headline-md text-primary md:text-3xl">Simple, Transparent Pricing</h2>
           <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">
-            All paid plans include up to 100 tailored resumes per month.
+            Start free. Upgrade to Starter for serious job hunts, or Pro for unlimited, ad-free use.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter max-w-5xl mx-auto items-stretch">
-          {/* Free Card */}
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-lg flex flex-col hover:border-secondary transition-colors">
-            <h3 className="font-headline-md text-headline-md text-primary">Free</h3>
-            <div className="mt-4 flex items-baseline gap-1">
-              <span className="font-display-lg text-display-lg text-primary">$0</span>
-              <span className="text-on-surface-variant font-body-sm text-body-sm">/ forever</span>
-            </div>
-            <p className="font-body-sm text-body-sm text-on-surface-variant mt-2 border-b border-outline-variant/30 pb-4">Test the waters and see the AI in action.</p>
-            <ul className="mt-4 space-y-3 flex-grow font-body-sm text-body-sm text-primary">
-              <li className="flex items-start gap-2"><span className="material-symbols-outlined text-tertiary-container text-[18px]">check</span> 5 Resume Matches per month</li>
-              <li className="flex items-start gap-2"><span className="material-symbols-outlined text-tertiary-container text-[18px]">check</span> Basic ATS Keyword Gap Analysis</li>
-              <li className="flex items-start gap-2"><span className="material-symbols-outlined text-tertiary-container text-[18px]">check</span> Standard PDF Export</li>
-            </ul>
-            <Link className="mt-8 w-full block text-center bg-surface-container border border-outline-variant text-primary font-label-uppercase text-label-uppercase px-4 py-3 rounded-lg hover:bg-surface-variant transition-colors" href="/signup">Start Free</Link>
-          </div>
-          {/* Starter (Monthly) Card */}
-          <div className="bg-primary text-on-primary border border-primary rounded-xl p-stack-lg flex flex-col relative shadow-lg transform md:-translate-y-2">
-            <div className="absolute top-0 right-6 transform -translate-y-1/2">
-              <span className="bg-secondary text-on-secondary font-label-uppercase text-[10px] px-3 py-1 rounded-full shadow-sm">Most Popular</span>
-            </div>
-            <h3 className="font-headline-md text-headline-md">Starter</h3>
-            <div className="mt-4 flex items-baseline gap-1">
-              <span className="font-display-lg text-display-lg">$5.49</span>
-              <span className="text-inverse-primary font-body-sm text-body-sm">/ month</span>
-            </div>
-            <p className="font-body-sm text-body-sm text-inverse-primary mt-2 border-b border-outline-variant/30 pb-4">Everything you need for an active job hunt.</p>
-            <ul className="mt-4 space-y-3 flex-grow font-body-sm text-body-sm">
-              <li className="flex items-start gap-2"><span className="material-symbols-outlined text-tertiary-fixed-dim text-[18px]">check</span> Up to 100 tailored resumes / month</li>
-              <li className="flex items-start gap-2"><span className="material-symbols-outlined text-tertiary-fixed-dim text-[18px]">check</span> Advanced AI Rewriting Engine</li>
-              <li className="flex items-start gap-2"><span className="material-symbols-outlined text-tertiary-fixed-dim text-[18px]">check</span> Master Resume Management</li>
-              <li className="flex items-start gap-2"><span className="material-symbols-outlined text-tertiary-fixed-dim text-[18px]">check</span> Application Tracker Dashboard</li>
-            </ul>
-            <PricingCTA
-              interval="monthly"
-              className="w-full block text-center bg-secondary text-on-secondary font-label-uppercase text-label-uppercase px-4 py-3 rounded-lg hover:bg-secondary-container transition-colors disabled:opacity-60 disabled:pointer-events-none"
-            >
-              Upgrade Monthly
-            </PricingCTA>
-          </div>
-          {/* Starter Yearly Card */}
-          <div className="bg-surface-container-lowest border border-secondary rounded-xl p-stack-lg flex flex-col relative shadow-md hover:border-secondary transition-colors">
-            <div className="absolute top-0 right-6 transform -translate-y-1/2">
-              <span className="bg-tertiary-container text-on-tertiary-container font-label-uppercase text-[10px] px-3 py-1 rounded-full shadow-sm">Save ~24%</span>
-            </div>
-            <h3 className="font-headline-md text-headline-md text-primary">Starter (Yearly)</h3>
-            <div className="mt-4 flex items-baseline gap-1">
-              <span className="font-display-lg text-display-lg text-primary">$49.99</span>
-              <span className="text-on-surface-variant font-body-sm text-body-sm">/ year</span>
-            </div>
-            <p className="font-body-sm text-body-sm text-on-surface-variant mt-2">
-              Just <span className="text-primary font-medium">$4.16</span> / month, billed annually.
-            </p>
-            <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 border-b border-outline-variant/30 pb-4">
-              Everything in Starter, with nearly 3 months free.
-            </p>
-            <ul className="mt-4 space-y-3 flex-grow font-body-sm text-body-sm text-primary">
-              <li className="flex items-start gap-2"><span className="material-symbols-outlined text-tertiary-container text-[18px]">check</span> Up to 100 tailored resumes / month</li>
-              <li className="flex items-start gap-2"><span className="material-symbols-outlined text-tertiary-container text-[18px]">check</span> Advanced AI Rewriting Engine</li>
-              <li className="flex items-start gap-2"><span className="material-symbols-outlined text-tertiary-container text-[18px]">check</span> Priority support</li>
-              <li className="flex items-start gap-2"><span className="material-symbols-outlined text-tertiary-container text-[18px]">check</span> Ad-free experience</li>
-              <li className="flex items-start gap-2"><span className="material-symbols-outlined text-tertiary-container text-[18px]">check</span> Lock-in pricing for 12 months</li>
-            </ul>
-            <PricingCTA
-              interval="yearly"
-              className="w-full block text-center bg-primary text-on-primary font-label-uppercase text-label-uppercase px-4 py-3 rounded-lg hover:bg-inverse-surface transition-colors disabled:opacity-60 disabled:pointer-events-none"
-            >
-              Upgrade Yearly
-            </PricingCTA>
-          </div>
-        </div>
+        <PricingPlans />
       </section>
 
       {/* FAQ Section */}

@@ -4,10 +4,11 @@
  */
 
 import type { ExtensionMessage } from '../common/types';
+import { dlog } from '../common/debug';
 
 // Listen for messages from content scripts and popup
 chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendResponse) => {
-  console.log('[Background] Received message:', message.action);
+  void dlog('Background', `Received message: ${message.action}`);
 
   switch (message.action) {
     case 'GET_STORED_RESUME':
@@ -62,7 +63,8 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendRes
         sendResponse({
           success: true,
           data: {
-            apiUrl: result.apiUrl || 'http://localhost:3000',
+            // Default to production. Fresh installs should never hit localhost.
+            apiUrl: result.apiUrl || 'https://hiretuner.com',
             debug: result.debug || false,
           },
         });
@@ -96,4 +98,4 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
-console.log('[Background] Service Worker initialized');
+void dlog('Background', 'Service Worker initialized');

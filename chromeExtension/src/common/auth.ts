@@ -17,8 +17,7 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import {
   getAuth,
-  GoogleAuthProvider,
-  signInWithCredential,
+  signInWithCustomToken,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   type Auth,
@@ -220,8 +219,26 @@ export async function getCurrentIdToken(): Promise<string | null> {
 
   const issuedAt = (stored.firebaseTokenIssuedAt as number | undefined) ?? 0;
   const ageMinutes = (Date.now() - issuedAt) / 1000 / 60;
+  // Use the cached token directly when it has plenty of life left.
   if (stored.firebaseIdToken && ageMinutes < 50) {
     return stored.firebaseIdToken as string;
+  }
+
+  // In the 50–58 minute window, try to refresh against the backend without
+  // a user-visible re-sign-in. The bridge flow never signed Firebase in
+  // inside the extension's origin, so we can't rely on Firebase Web SDK's
+  // auto-refresh — we ask the server to mint a custom token and use that.
+  if (stored.firebaseIdToken && ageMinutes < 58) {
+    const fresh = await refreshViaBackend(stored.firebaseIdToken as string).catch(() => null);
+    if (fresh) {
+      await chrome.storage.local.set({
+        firebaseIdToken: fresh,
+        firebaseTokenIssuedAt: Date.now(),
+      });
+      return fresh;
+    }
+    // Refresh attempt failed — fall through and let the Web SDK try, then
+    // ultimately return null which forces a re-sign-in.
   }
 
   const auth = await getFirebase();
@@ -238,6 +255,39 @@ export async function getCurrentIdToken(): Promise<string | null> {
     firebaseTokenIssuedAt: Date.now(),
   });
   return idToken;
+}
+
+/**
+ * Ask the server to mint a custom token from a still-valid ID token, then
+ * sign the extension's Firebase auth in with that custom token and return a
+ * fresh ID token. Returns null on any failure so the caller can fall back to
+ * the interactive bridge flow.
+ */
+async function refreshViaBackend(cachedIdToken: string): Promise<string | null> {
+  const apiUrl = (await getApiUrl()).replace(/\/$/, "");
+  const response = await fetch(`${apiUrl}/api/auth/firebase/refresh`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${cachedIdToken}`,
+    },
+    body: JSON.stringify({ idToken: cachedIdToken }),
+  }).catch(() => null);
+  if (!response || !response.ok) return null;
+  const json = (await response.json().catch(() => null)) as
+    | { ok?: boolean; data?: { customToken?: string } }
+    | null;
+  const customToken = json?.data?.customToken;
+  if (!customToken) return null;
+
+  const auth = await getFirebase();
+  if (!auth) return null;
+  try {
+    const credential = await signInWithCustomToken(auth, customToken);
+    return await credential.user.getIdToken();
+  } catch {
+    return null;
+  }
 }
 
 function waitForUser(auth: Auth, timeoutMs = 4000): Promise<User | null> {

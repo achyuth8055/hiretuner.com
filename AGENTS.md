@@ -5,7 +5,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 <!-- END:nextjs-agent-rules -->
 
 # SEO & AdSense
-
+a
 This site runs Google AdSense and depends on organic search. **Before adding or editing any page, route, or content block, follow [`SEO_ADSENSE_CHECKLIST.md`](SEO_ADSENSE_CHECKLIST.md) and ensure every applicable item passes.** Key conventions:
 
 - Every page exports metadata via `pageMetadata({ title, description, path })` from `@/lib/seo` — never a bare metadata object.

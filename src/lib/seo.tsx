@@ -63,3 +63,127 @@ export function JsonLd({ data }: { data: Record<string, unknown> }) {
     />
   )
 }
+
+/** Absolute URL for a site-relative path ("/" maps to the bare origin). */
+const absoluteUrl = (path: string) => `${siteConfig.url}${path === "/" ? "" : path}`
+
+const organizationRef = {
+  "@type": "Organization",
+  name: siteConfig.name,
+  url: siteConfig.url,
+} as const
+
+/**
+ * BreadcrumbList structured data. Pass the trail *after* Home (which is always
+ * prepended), e.g. breadcrumbLd([{ name: "ATS Resume Score Checker", path: "/ats-resume-score-checker" }]).
+ */
+export function breadcrumbLd(crumbs: { name: string; path: string }[]): Record<string, unknown> {
+  const items = [{ name: "Home", path: "/" }, ...crumbs]
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((crumb, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: crumb.name,
+      item: absoluteUrl(crumb.path),
+    })),
+  }
+}
+
+/**
+ * WebApplication structured data for the free browser tools — no install, free
+ * to use. Mirrors the SoftwareApplication markup on the home page.
+ */
+export function webApplicationLd({
+  name,
+  description,
+  path,
+  category = "BusinessApplication",
+}: {
+  name: string
+  description: string
+  path: string
+  category?: string
+}): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name,
+    description,
+    url: absoluteUrl(path),
+    applicationCategory: category,
+    operatingSystem: "Web",
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    isAccessibleForFree: true,
+    publisher: organizationRef,
+  }
+}
+
+/** Article structured data for guide / long-form content pages. */
+export function articleLd({
+  headline,
+  description,
+  path,
+  datePublished,
+  dateModified,
+}: {
+  headline: string
+  description: string
+  path: string
+  datePublished: string
+  dateModified?: string
+}): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline,
+    description,
+    mainEntityOfPage: absoluteUrl(path),
+    datePublished,
+    dateModified: dateModified ?? datePublished,
+    author: organizationRef,
+    publisher: {
+      ...organizationRef,
+      logo: { "@type": "ImageObject", url: `${siteConfig.url}${siteConfig.ogImage}` },
+    },
+  }
+}
+
+/**
+ * FAQPage structured data. Only use when the same questions and answers are
+ * visible on the page — Google requires the markup to match rendered content.
+ */
+export function faqLd(items: { q: string; a: string }[]): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a },
+    })),
+  }
+}
+
+/** Generic WebPage structured data for informational pages (legal, contact, etc.). */
+export function webPageLd({
+  name,
+  description,
+  path,
+  type = "WebPage",
+}: {
+  name: string
+  description: string
+  path: string
+  type?: string
+}): Record<string, unknown> {
+  return {
+    "@context": "https://schema.org",
+    "@type": type,
+    name,
+    description,
+    url: absoluteUrl(path),
+    isPartOf: { "@type": "WebSite", name: siteConfig.name, url: siteConfig.url },
+  }
+}
