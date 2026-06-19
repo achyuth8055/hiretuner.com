@@ -7,6 +7,7 @@ import {
   saveTailoredResume,
 } from "@/lib/database"
 import { jsonError, jsonOk, refundUsage, requireApiUser, readJson, reserveUsage } from "@/lib/http"
+import { isLlmTailorConfigured, tailorResumeWithLLM } from "@/lib/llm-tailor"
 import { logger } from "@/lib/logger"
 import { generateTailoredResume } from "@/lib/resume-engine"
 import type { Application, TailoredResume } from "@/lib/rolefit-types"
@@ -91,6 +92,70 @@ export async function POST(request: NextRequest) {
       analysis: jobDescription.analysis,
       confirmedSkills,
     })
+
+    // LLM tailoring overlay — when OPENAI_API_KEY is configured, ask an LLM
+    // to reword the summary + bullets to better match the JD while keeping
+    // the heuristic-built structure intact. Failures here are silent; the
+    // heuristic output is the safe baseline.
+    if (isLlmTailorConfigured()) {
+      const supportedSkills = new Set<string>()
+      Object.values(masterResume.structuredProfile.skills).forEach((list) =>
+        list.forEach((skill) => supportedSkills.add(skill)),
+      )
+      confirmedSkills.forEach((skill) => supportedSkills.add(skill))
+
+      const overlay = await tailorResumeWithLLM({
+        // The tailoring engine builds resumeJson by stripping a few
+        // structured-profile fields not needed for the on-page editor; for
+        // the LLM call we pass the master's full profile to ensure the model
+        // gets all signals (skills + links).
+        profile: {
+          ...masterResume.structuredProfile,
+          summary: generated.resumeJson.summary,
+          skills: generated.resumeJson.skills,
+          workExperience: generated.resumeJson.workExperience,
+          projects: generated.resumeJson.projects,
+          education: generated.resumeJson.education,
+          certifications: generated.resumeJson.certifications,
+        },
+        analysis: jobDescription.analysis,
+        confirmedSkills,
+        supportedSkills: Array.from(supportedSkills),
+      })
+
+      if (overlay) {
+        generated.resumeJson.summary = overlay.summary
+        overlay.experience.forEach((entry, index) => {
+          const target = generated.resumeJson.workExperience[index]
+          if (!target) return
+          // Preserve original metadata; only swap bullets (already coerced to
+          // the original count) and accept the title/company echo for safety.
+          if (entry.bullets?.length === target.bullets.length) {
+            target.bullets = entry.bullets
+          }
+        })
+        overlay.projects.forEach((entry, index) => {
+          const target = generated.resumeJson.projects[index]
+          if (!target) return
+          if (entry.description) target.description = entry.description
+          if (entry.bullets?.length === target.bullets.length) {
+            target.bullets = entry.bullets
+          }
+        })
+        overlay.notes.forEach((note) => {
+          generated.changeLog.push({
+            id: createId(),
+            label: "reworded_from_existing",
+            section: "LLM rewrite",
+            reason: note,
+          })
+        })
+        logger.info("api.tailored-resumes", "LLM overlay applied", {
+          userId: context.user.id,
+          notes: overlay.notes.length,
+        })
+      }
+    }
     const timestamp = nowIso()
     const versionNumber =
       database.tailoredResumes.filter((resume) => resume.userId === context.user.id).length + 1

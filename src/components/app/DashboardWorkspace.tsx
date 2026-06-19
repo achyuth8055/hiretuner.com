@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
+import { TailoringProgressOverlay } from "@/components/app/TailoringProgressOverlay"
 import { UpgradeButton } from "@/components/app/UpgradeButton"
 import { UpgradeStatusBanner } from "@/components/app/UpgradeStatusBanner"
 import type {
@@ -209,6 +210,11 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
 
   return (
     <div className="p-gutter flex-1 overflow-y-auto max-w-[1400px] mx-auto w-full">
+      <TailoringProgressOverlay
+        key={loading || "idle"}
+        open={loading === "analysis" || loading === "tailor"}
+        mode={loading === "tailor" ? "tailor" : "analyze"}
+      />
       <UpgradeStatusBanner currentPlan={initial.plan} />
       <div className="mb-stack-lg flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
@@ -248,7 +254,7 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
         <MetricCard icon="checklist" label="Apps Tracked" value={applications.length} />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-gutter mb-stack-xl">
+      <div data-dashboard-row className="grid grid-cols-1 xl:grid-cols-3 gap-gutter mb-stack-xl scroll-mt-32">
         <form id="your-resume" onSubmit={uploadResume} className="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-stack-md shadow-sm scroll-mt-32">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-label-uppercase text-label-uppercase text-primary">Your Resume</h3>
@@ -392,7 +398,7 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row gap-gutter">
+      <div data-dashboard-row className="flex flex-col lg:flex-row gap-gutter scroll-mt-32">
         <div id="applications" className="flex-1 bg-surface-container-lowest border border-outline-variant/50 rounded-lg shadow-sm overflow-hidden flex flex-col scroll-mt-32">
           <div className="p-stack-md border-b border-outline-variant/30 flex justify-between items-center bg-surface-bright">
             <h3 className="font-label-uppercase text-label-uppercase text-primary">Recent Applications</h3>
