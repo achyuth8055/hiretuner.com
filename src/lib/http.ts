@@ -6,6 +6,7 @@ import { csrfCheck } from "@/lib/csrf"
 import {
   currentUsageMonth,
   createId,
+  getUsageSnapshotForUser,
   updateDatabase,
   upsertUsageForUser,
 } from "@/lib/database"
@@ -69,7 +70,10 @@ export function requireApiUser(request: NextRequest | Request): ApiUserContext |
 
   const subscription = auth.subscription
   const plan = resolvePlan(subscription)
-  const usage = upsertUsageForUser(auth.user.id)
+  // Read-only snapshot in the auth hot path — only write when a route
+  // actually counts usage (via reserveUsage / incrementUsage). Closes
+  // AUTH-M4 write amplification.
+  const usage = getUsageSnapshotForUser(auth.user.id)
 
   return {
     user: auth.user,
@@ -97,7 +101,8 @@ export async function requireApiUserAsync(
 
   const subscription = auth.subscription
   const plan = resolvePlan(subscription)
-  const usage = upsertUsageForUser(auth.user.id)
+  // Read-only snapshot — see requireApiUser for rationale.
+  const usage = getUsageSnapshotForUser(auth.user.id)
 
   return {
     user: auth.user,

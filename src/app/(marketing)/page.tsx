@@ -58,7 +58,7 @@ export default function Home() {
       { "@type": "Offer", price: "9.99", priceCurrency: "USD", name: "Pro (Monthly)" },
       { "@type": "Offer", price: "120", priceCurrency: "USD", name: "Pro / Max (Yearly)" },
     ],
-    // aggregateRating intentionally omitted during beta — the product hasn't
+    // aggregateRating intentionally omitted during beta - the product hasn't
     // accumulated real review counts and Google Search Console flags fabricated
     // ratings. Re-enable once we have verifiable reviews.
   }
@@ -73,13 +73,13 @@ export default function Home() {
         <div className="flex flex-col gap-stack-lg z-10">
           <div className="inline-flex items-center gap-2 self-start bg-secondary-fixed/30 text-primary px-3 py-1 rounded-full border border-secondary-fixed/40">
             <span className="material-symbols-outlined text-[14px]">science</span>
-            <span className="font-label-uppercase text-[11px] tracking-wider">Beta — Free during launch</span>
+            <span className="font-label-uppercase text-[11px] tracking-wider">Beta - Free during launch</span>
           </div>
           <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary">
             Tailor your resume to <span className="text-secondary">any job description</span> in minutes.
           </h1>
           <p className="font-body-base text-body-base text-on-surface-variant max-w-md">
-            HireTuner reads the JD, surfaces the keywords your resume is missing, and helps you reorder your strongest bullets toward what matters — without inventing experience you don&apos;t have.
+            HireTuner reads the JD, surfaces the keywords your resume is missing, and helps you reorder your strongest bullets toward what matters - without inventing experience you don&apos;t have.
           </p>
           <div className="flex flex-col sm:flex-row gap-stack-md pt-stack-sm">
             <Button size="lg" className="gap-2" asChild>
@@ -445,7 +445,7 @@ export default function Home() {
             </div>
             <h2 className="font-headline-md text-headline-md md:text-4xl text-on-primary">Take HireTuner Everywhere</h2>
             <p className="font-body-base text-body-base text-inverse-primary max-w-lg">
-              Extract the job description with one click from LinkedIn, Indeed, Glassdoor, Greenhouse, Lever, Workday and more — then run an ATS-style analysis against your stored resume right in the popup.
+              Extract the job description with one click from LinkedIn, Indeed, Glassdoor, Greenhouse, Lever, Workday and more - then run an ATS-style analysis against your stored resume right in the popup.
             </p>
             <div className="flex gap-4 mt-4">
               <Button size="lg" className="gap-2 bg-on-primary text-primary hover:bg-surface-variant">

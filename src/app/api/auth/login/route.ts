@@ -61,7 +61,10 @@ export async function POST(request: Request) {
     return jsonError("Invalid email or password.", 401, "invalid_credentials")
   }
 
-  await createSessionForUser(user.id)
+  await createSessionForUser(user.id, {
+    userAgent: request.headers.get("user-agent"),
+    ip,
+  })
   const subscription = getSubscriptionForUser(user.id)
   const usage = upsertUsageForUser(user.id)
 

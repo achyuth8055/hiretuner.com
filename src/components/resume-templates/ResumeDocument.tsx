@@ -11,7 +11,7 @@ import type {
  * Renders a {@link ResumeData} record into a fixed-size A4 "page" styled purely
  * from the template's layout + theme. Everything is inline-styled and light-mode
  * so the same markup is used for gallery thumbnails, the on-page preview, and
- * (later) PDF export — unaffected by the surrounding site theme.
+ * (later) PDF export - unaffected by the surrounding site theme.
  */
 
 // A4 at ~96dpi. Thumbnails just CSS-scale this fixed canvas.

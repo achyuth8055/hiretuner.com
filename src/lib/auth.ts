@@ -137,7 +137,10 @@ export function createUserRecord(input: {
   return { user, subscription }
 }
 
-export function createSessionRecord(userId: string): Session {
+export function createSessionRecord(
+  userId: string,
+  context?: { userAgent?: string | null; ip?: string | null },
+): Session {
   const timestamp = nowIso()
   const expiresAt = new Date(Date.now() + SESSION_MAX_AGE_SECONDS * 1000).toISOString()
 
@@ -146,6 +149,9 @@ export function createSessionRecord(userId: string): Session {
     userId,
     expiresAt,
     createdAt: timestamp,
+    userAgent: context?.userAgent?.slice(0, 240) ?? "",
+    ip: context?.ip ?? "",
+    lastSeenAt: timestamp,
   }
 }
 
@@ -162,19 +168,74 @@ export async function setSessionCookie(session: Session) {
 
 export async function clearSessionCookie() {
   const cookieStore = await cookies()
-  cookieStore.delete(SESSION_COOKIE)
+  // Pass attributes explicitly so we delete the exact cookie we set in
+  // setSessionCookie — otherwise a future cookie attribute change could
+  // silently leave a stale cookie on the client.
+  cookieStore.set(SESSION_COOKIE, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0,
+  })
 }
 
-export async function createSessionForUser(userId: string) {
-  const session = createSessionRecord(userId)
+// Soft cap so an attacker can't flood the user's session list. Oldest entries
+// (by createdAt) are evicted when this is exceeded.
+const MAX_ACTIVE_SESSIONS_PER_USER = 10
+
+export async function createSessionForUser(
+  userId: string,
+  context?: { userAgent?: string | null; ip?: string | null },
+) {
+  const session = createSessionRecord(userId, context)
   updateDatabase((database) => {
-    // Single-session policy: on every successful login, invalidate ALL prior
-    // sessions for this user so a stolen cookie doesn't outlive a re-login.
-    database.sessions = database.sessions.filter((item) => item.userId !== userId)
-    database.sessions.push(session)
+    // Multi-device sessions: don't nuke prior sessions on login (that broke
+    // the "I'm logged in on desktop + phone" case). The user can revoke
+    // specific devices from /dashboard/settings (AUTH-M1) or click
+    // "Sign out all other sessions" if they suspect a stolen cookie.
+    const userSessions = database.sessions.filter((item) => item.userId === userId)
+    const others = database.sessions.filter((item) => item.userId !== userId)
+    const kept = [...userSessions, session]
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, MAX_ACTIVE_SESSIONS_PER_USER)
+    database.sessions = [...others, ...kept]
   })
   await setSessionCookie(session)
   return session
+}
+
+/**
+ * Revoke every session for `userId` except the one named — used by the
+ * "Sign out all other sessions" button in /dashboard/settings (AUTH-M1).
+ */
+export function revokeOtherSessions(userId: string, keepSessionId: string) {
+  updateDatabase((database) => {
+    database.sessions = database.sessions.filter(
+      (item) => item.userId !== userId || item.id === keepSessionId,
+    )
+  })
+}
+
+/**
+ * Revoke a specific session record. Caller must validate ownership before
+ * calling — this function deliberately does not double-check.
+ */
+export function revokeSessionById(sessionId: string) {
+  updateDatabase((database) => {
+    database.sessions = database.sessions.filter((item) => item.id !== sessionId)
+  })
+}
+
+/**
+ * Used by the sessions UI to list a user's active sessions, redacting the
+ * raw token (it's already in cookie form; we never re-expose it).
+ */
+export function listSessionsForUser(userId: string) {
+  const now = Date.now()
+  return readDatabase().sessions
+    .filter((item) => item.userId === userId && new Date(item.expiresAt).getTime() > now)
+    .sort((a, b) => (b.lastSeenAt ?? b.createdAt).localeCompare(a.lastSeenAt ?? a.createdAt))
 }
 
 export function getSessionFromToken(token: string | undefined | null) {

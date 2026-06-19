@@ -45,8 +45,23 @@ export function getFirebaseApp(): App | null {
   if (!isFirebaseAdminEnabled()) return null
   if (cachedApp) return cachedApp
 
+  const serviceAccount = getServiceAccount()
+  if (!serviceAccount) return null
+
   const existing = getApps().find((app) => app.name === APP_NAME)
   if (existing) {
+    // Verify the cached app actually belongs to the configured project so we
+    // don't accidentally inherit a dev/test SDK instance left over by another
+    // module (AUTH-M7).
+    const cachedProjectId =
+      (existing.options as { credential?: { projectId?: string }; projectId?: string }).projectId ??
+      (existing.options as { credential?: { projectId?: string } }).credential?.projectId
+    if (cachedProjectId && cachedProjectId !== serviceAccount.projectId) {
+      throw new Error(
+        `Firebase Admin app "${APP_NAME}" cached for project ${cachedProjectId}, ` +
+          `but FIREBASE_PROJECT_ID is ${serviceAccount.projectId}. Refusing to mix.`,
+      )
+    }
     cachedApp = existing
     return existing
   }
@@ -54,7 +69,7 @@ export function getFirebaseApp(): App | null {
   try {
     cachedApp = initializeApp(
       {
-        credential: cert(getServiceAccount()!),
+        credential: cert(serviceAccount),
         storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
       },
       APP_NAME,

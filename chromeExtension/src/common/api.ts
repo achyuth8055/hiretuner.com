@@ -35,6 +35,34 @@ class APIClient {
     this.apiUrl = apiUrl.replace(/\/$/, '');
   }
 
+  /**
+   * Pull the signed-in user's master resume text from the website so the
+   * extension can analyze against it without the user re-pasting (EXT-E16).
+   * Returns null when not signed in, when no master resume exists, or on
+   * network error — callers should fall back to the local cached text.
+   */
+  async fetchMasterResumeText(): Promise<string | null> {
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      try {
+        const token = await getCurrentIdToken();
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+      } catch {
+        return null;
+      }
+      const response = await fetch(`${this.apiUrl}/api/resumes/master`, {
+        method: 'GET',
+        headers,
+      });
+      if (!response.ok) return null;
+      const envelope = (await response.json().catch(() => ({}))) as ApiEnvelope;
+      const data = envelope.data as { masterResume?: { parsedText?: string } } | undefined;
+      return data?.masterResume?.parsedText?.trim() || null;
+    } catch {
+      return null;
+    }
+  }
+
   /** ATS score (server expects { resumeText, targetRole }). */
   async analyzeATS(resume: ResumeData, jobDescription: JobDescription): Promise<AnalysisResult> {
     return this.callAPI(

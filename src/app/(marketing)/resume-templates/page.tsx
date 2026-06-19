@@ -29,13 +29,13 @@ export default function ResumeTemplatesPage() {
       <JsonLd data={breadcrumbLd([{ name: "Resume & CV Templates", path: PATH }])} />
       <JsonLd data={webApplicationLd({ name: TITLE, description: DESCRIPTION, path: PATH })} />
 
-      {/* Hero — text only, LCP-safe */}
+      {/* Hero - text only, LCP-safe */}
       <section className="max-w-[1200px] mx-auto px-margin-page py-stack-xl w-full text-center flex flex-col items-center">
         <h1 className="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg font-bold text-primary mb-stack-sm max-w-3xl leading-tight">
           {COUNT}+ free resume &amp; CV templates
         </h1>
         <p className="font-body-base text-body-base text-on-surface-variant max-w-2xl mb-stack-lg text-lg">
-          Every template is ATS-friendly, built from clean HTML and CSS — no graphics that break parsing.
+          Every template is ATS-friendly, built from clean HTML and CSS - no graphics that break parsing.
           Preview any design, then pick the one that fits the job you want.
         </p>
         <div className="flex flex-col sm:flex-row gap-stack-sm">

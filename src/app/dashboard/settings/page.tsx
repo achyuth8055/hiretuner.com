@@ -5,9 +5,10 @@ import { resolvePlan } from "@/lib/http"
 import { PLAN_LIMITS } from "@/lib/rolefit-types"
 import { LogoutButton } from "@/components/app/LogoutButton"
 import { ManageSubscriptionButton } from "./ManageSubscriptionButton"
+import { SessionsPanel } from "./SessionsPanel"
 
 export const metadata = {
-  title: "Settings — HireTuner",
+  title: "Settings - HireTuner",
   description: "Manage your HireTuner account, subscription, and preferences.",
 }
 
@@ -85,7 +86,7 @@ export default async function SettingsPage() {
         {plan !== "free" && (
           <p className="text-xs text-on-surface-variant border-t border-outline-variant/20 pt-3">
             Manage billing details, switch between monthly/yearly, or cancel anytime via the
-            Stripe portal — your access continues until the end of the paid period.
+            Stripe portal - your access continues until the end of the paid period.
           </p>
         )}
       </section>
@@ -93,7 +94,7 @@ export default async function SettingsPage() {
       {/* Security */}
       <section className="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-stack-md shadow-sm mb-stack-lg">
         <h3 className="font-label-uppercase text-label-uppercase text-primary mb-4">Security</h3>
-        <div className="space-y-3">
+        <div className="space-y-3 mb-stack-md">
           <Link
             href="/reset-password"
             className="block px-4 py-3 rounded border border-outline-variant/30 hover:bg-surface-container-high transition-colors text-body-sm"
@@ -104,6 +105,10 @@ export default async function SettingsPage() {
             </div>
           </Link>
           <LogoutButton className="w-full flex items-center gap-2 px-4 py-3 rounded border border-outline-variant/30 hover:bg-surface-container-high transition-colors text-body-sm text-left" />
+        </div>
+        <div className="border-t border-outline-variant/20 pt-stack-md">
+          <h4 className="font-label-uppercase text-label-uppercase text-on-surface-variant mb-3">Active sessions</h4>
+          <SessionsPanel />
         </div>
       </section>
 

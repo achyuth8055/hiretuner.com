@@ -33,33 +33,65 @@ const historyList = document.getElementById('historyList') as HTMLElement;
 
 // Tab switching
 document.querySelectorAll('.tab-btn').forEach((btn) => {
-  btn.addEventListener('click', () => {
+  // ARIA tab pattern (EXT-E29): make the tab button keyboard-navigable with
+  // arrow keys and announce the active state to screen readers.
+  btn.setAttribute('role', 'tab');
+  btn.setAttribute('tabindex', btn.classList.contains('active') ? '0' : '-1');
+  btn.setAttribute('aria-selected', btn.classList.contains('active') ? 'true' : 'false');
+  const panelId = btn.getAttribute('data-tab');
+  if (panelId) btn.setAttribute('aria-controls', panelId);
+
+  const activate = () => {
     const tabName = btn.getAttribute('data-tab');
     if (!tabName) return;
 
-    // Hide all tabs
     document.querySelectorAll('.tab-content').forEach((tab) => {
       tab.classList.remove('active');
+      tab.setAttribute('role', 'tabpanel');
     });
-
-    // Remove active class from all buttons
     document.querySelectorAll('.tab-btn').forEach((b) => {
       b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+      b.setAttribute('tabindex', '-1');
     });
 
-    // Show selected tab
     const selectedTab = document.getElementById(tabName);
     if (selectedTab) {
       selectedTab.classList.add('active');
     }
     btn.classList.add('active');
+    btn.setAttribute('aria-selected', 'true');
+    btn.setAttribute('tabindex', '0');
+    (btn as HTMLElement).focus();
 
-    // Load history when history tab is opened
     if (tabName === 'history') {
       loadHistory();
     }
+  };
+
+  btn.addEventListener('click', activate);
+
+  btn.addEventListener('keydown', (event) => {
+    const evt = event as KeyboardEvent;
+    if (evt.key !== 'ArrowLeft' && evt.key !== 'ArrowRight' && evt.key !== 'Home' && evt.key !== 'End') return;
+    evt.preventDefault();
+    const tabs = Array.from(document.querySelectorAll('.tab-btn')) as HTMLElement[];
+    const idx = tabs.indexOf(btn as HTMLElement);
+    let nextIdx = idx;
+    if (evt.key === 'ArrowLeft') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+    else if (evt.key === 'ArrowRight') nextIdx = (idx + 1) % tabs.length;
+    else if (evt.key === 'Home') nextIdx = 0;
+    else if (evt.key === 'End') nextIdx = tabs.length - 1;
+    tabs[nextIdx].click();
   });
 });
+
+// Set the tablist role on the container holding the tab buttons.
+const firstTab = document.querySelector('.tab-btn');
+if (firstTab?.parentElement) {
+  firstTab.parentElement.setAttribute('role', 'tablist');
+  firstTab.parentElement.setAttribute('aria-label', 'HireTuner features');
+}
 
 // Main analyze button
 analyzeBtn.addEventListener('click', async () => {
@@ -82,6 +114,10 @@ analyzeBtn.addEventListener('click', async () => {
 
   const resume: ResumeData = { text: resumeText };
   const jobDesc: JobDescription = { text: jobDescText };
+
+  // Flip the action badge to busy while we run; flip back to idle/error in
+  // the finally / catch branches (EXT-E34).
+  chrome.runtime.sendMessage({ action: 'SET_BADGE', state: 'busy' });
 
   try {
     let result: AnalysisResult;
@@ -108,6 +144,7 @@ analyzeBtn.addEventListener('click', async () => {
 
     if (result.success && result.data) {
       displayResult(result.data);
+      chrome.runtime.sendMessage({ action: 'REFRESH_BADGE' });
 
       // Save to history
       chrome.runtime.sendMessage({
@@ -116,9 +153,11 @@ analyzeBtn.addEventListener('click', async () => {
       });
     } else {
       showError(result.error || 'Analysis failed');
+      chrome.runtime.sendMessage({ action: 'SET_BADGE', state: 'error' });
     }
   } catch (error) {
     showError(error instanceof Error ? error.message : 'An error occurred');
+    chrome.runtime.sendMessage({ action: 'SET_BADGE', state: 'error' });
   } finally {
     showLoading(false);
   }
@@ -184,13 +223,31 @@ extractJobPageBtn.addEventListener('click', async () => {
   }
 });
 
-// Load stored resume
-loadResumeBtn.addEventListener('click', () => {
+// Load stored resume — tries the website's master resume first when signed
+// in (EXT-E16) and falls back to the extension's locally cached text. This
+// removes the "I uploaded my resume on the website but the extension says
+// nothing is stored" confusion from the audit.
+loadResumeBtn.addEventListener('click', async () => {
+  // 1. Try the server master resume if we have an ID token.
+  try {
+    const serverText = await apiClient.fetchMasterResumeText();
+    if (serverText) {
+      resumeInput.value = serverText;
+      hideError();
+      // Also cache to local for offline use.
+      chrome.runtime.sendMessage({ action: 'SAVE_RESUME', payload: serverText });
+      return;
+    }
+  } catch {
+    /* fall through to local cache */
+  }
+  // 2. Fall back to whatever's cached in chrome.storage.local.
   chrome.runtime.sendMessage({ action: 'GET_STORED_RESUME' }, (response) => {
     if (response?.success && response.data) {
       resumeInput.value = response.data;
+      hideError();
     } else {
-      showError('No stored resume found');
+      showError('No stored resume found. Upload one at hiretuner.com/dashboard, then click Load again.');
     }
   });
 });

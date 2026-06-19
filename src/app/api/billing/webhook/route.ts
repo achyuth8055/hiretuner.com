@@ -94,12 +94,20 @@ export async function POST(request: Request) {
     await handleStripeEvent(event, stripe)
     markEventProcessed(event)
   } catch (error) {
-    logger.error("api.billing.webhook", "Failed to process Stripe event", {
+    // Return 200 + log instead of 500 so Stripe stops retrying a permanently
+    // failing event (e.g. webhook-side schema bug). We still mark it processed
+    // so manual replay is required to retry — that's the intended workflow.
+    logger.error("api.billing.webhook", "Failed to process Stripe event — acking to stop retries", {
       type: event.type,
       id: event.id,
       error: error instanceof Error ? error.message : String(error),
     })
-    return jsonError("Failed to process Stripe event.", 500, "stripe_error")
+    try {
+      markEventProcessed(event)
+    } catch {
+      /* If even idempotency persistence fails, accept the duplicate cost over a retry storm. */
+    }
+    return jsonOk({ received: true, type: event.type, processedWithError: true })
   }
 
   return jsonOk({ received: true, type: event.type })

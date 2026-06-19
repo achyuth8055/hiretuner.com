@@ -5,7 +5,7 @@ import { salaryGuides, salaryStreams } from "@/lib/salary-guides"
 
 const TITLE = "Tech Salary Guides 2026"
 const DESCRIPTION =
-  "Salary guides for developers and tech roles across every stream — backend, frontend, data, ML, DevOps, mobile, design and more. See pay by experience level and the skills that raise it."
+  "Salary guides for developers and tech roles across every stream - backend, frontend, data, ML, DevOps, mobile, design and more. See pay by experience level and the skills that raise it."
 const PATH = "/salary-guide"
 
 export const metadata = pageMetadata({
@@ -26,7 +26,7 @@ export default function SalaryGuideIndexPage() {
           Tech salary guides for every stream
         </h1>
         <p className="font-body-base text-body-base text-on-surface-variant text-lg">
-          Whatever you build, know your worth. Browse salary guides across {salaryStreams.length} disciplines — each with
+          Whatever you build, know your worth. Browse salary guides across {salaryStreams.length} disciplines - each with
           pay by experience level, the skills that move it, and how to tailor your resume for the best-paying roles.
         </p>
       </header>

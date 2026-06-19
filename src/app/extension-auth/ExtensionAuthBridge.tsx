@@ -15,7 +15,7 @@ import {
  * chrome.identity.launchWebAuthFlow with a `redirect` query param set to its
  * `chromiumapp.org` callback URL. When the user finishes Firebase popup
  * sign-in here, we navigate the window to `<redirect>#idToken=...&email=...`
- * — chrome.identity intercepts that URL and hands it back to the extension.
+ * - chrome.identity intercepts that URL and hands it back to the extension.
  *
  * Using a bridge avoids requiring a separate Chrome App OAuth client; the
  * existing Firebase Web SDK + Authorized Domains setup is enough.
@@ -81,7 +81,7 @@ export function ExtensionAuthBridge() {
       const name = credential.user.displayName ?? ""
 
       // Also tell the HireTuner server so a session cookie is minted on the
-      // browser — useful if the user opens hiretuner.com in another tab next.
+      // browser - useful if the user opens hiretuner.com in another tab next.
       try {
         await fetch("/api/auth/firebase", {
           method: "POST",
@@ -100,6 +100,9 @@ export function ExtensionAuthBridge() {
       hash.set("idToken", idToken)
       hash.set("email", email)
       hash.set("name", name)
+      // Return the actual Firebase UID so the extension stops using `email`
+      // as a stand-in `firebaseUid` (EXT-E17).
+      if (credential.user.uid) hash.set("uid", credential.user.uid)
       target.hash = hash.toString()
       // Brief delay so the user sees confirmation before the popup closes.
       setTimeout(() => {

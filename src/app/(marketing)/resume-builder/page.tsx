@@ -51,7 +51,7 @@ const FEATURES = [
   {
     icon: "download",
     title: "Clean exports",
-    body: "Download a crisp PDF that looks identical whether a human or a parser opens it — no broken tables, columns, or hidden text.",
+    body: "Download a crisp PDF that looks identical whether a human or a parser opens it - no broken tables, columns, or hidden text.",
   },
 ]
 
@@ -64,7 +64,7 @@ const STEPS = [
   {
     step: "2",
     title: "Pick a template",
-    body: "Choose a recruiter-approved, ATS-safe layout. Switch templates anytime — your content stays exactly where it is.",
+    body: "Choose a recruiter-approved, ATS-safe layout. Switch templates anytime - your content stays exactly where it is.",
   },
   {
     step: "3",
@@ -93,7 +93,7 @@ const FAQ = [
   },
   {
     q: "Can I tailor one resume to different jobs?",
-    a: "That is exactly what HireTuner is built for. Save one master profile, then generate a tailored version for each job description with the right keywords and emphasis — without rewriting everything from scratch.",
+    a: "That is exactly what HireTuner is built for. Save one master profile, then generate a tailored version for each job description with the right keywords and emphasis - without rewriting everything from scratch.",
   },
   {
     q: "Will the AI invent experience I do not have?",
@@ -108,7 +108,7 @@ export default function ResumeBuilderPage() {
       <JsonLd data={webApplicationLd({ name: TITLE, description: DESCRIPTION, path: PATH })} />
       <JsonLd data={faqLd(FAQ.map((item) => ({ q: item.q, a: item.a })))} />
 
-      {/* Hero — text/CSS only to keep LCP fast */}
+      {/* Hero - text/CSS only to keep LCP fast */}
       <section className="max-w-[1200px] mx-auto px-margin-page py-stack-xl w-full text-center flex flex-col items-center">
         <span className="font-label-uppercase text-label-uppercase uppercase tracking-wide text-secondary bg-secondary-container/40 px-3 py-1 rounded-full mb-stack-md">
           Free Resume Builder
@@ -118,7 +118,7 @@ export default function ResumeBuilderPage() {
         </h1>
         <p className="font-body-base text-body-base text-on-surface-variant max-w-2xl mb-stack-lg text-lg">
           Start from a structured outline, write stronger bullet points, and tailor every section to the
-          job you want — then export a clean, recruiter-ready resume in minutes.
+          job you want - then export a clean, recruiter-ready resume in minutes.
         </p>
         <div className="flex flex-col sm:flex-row gap-stack-sm">
           <Button size="lg" className="px-8 py-4 h-auto font-bold tracking-wider rounded-lg" asChild>
@@ -167,7 +167,7 @@ export default function ResumeBuilderPage() {
         </div>
       </section>
 
-      {/* Ad — below the fold, content slot */}
+      {/* Ad - below the fold, content slot */}
       <section className="max-w-[1200px] mx-auto px-margin-page py-stack-lg w-full">
         <AdSlot slot="content" />
       </section>
@@ -181,7 +181,7 @@ export default function ResumeBuilderPage() {
           <p className="font-body-base text-body-base text-on-surface-variant">
             Most mid-size and large employers run resumes through an applicant tracking system before a
             human ever sees them. If the layout uses multiple columns, text boxes, or graphics, the parser
-            can misread your job titles and dates — or drop whole sections. A resume that looks beautiful
+            can misread your job titles and dates - or drop whole sections. A resume that looks beautiful
             but parses badly still gets filtered out.
           </p>
           <p className="font-body-base text-body-base text-on-surface-variant">

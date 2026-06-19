@@ -21,6 +21,8 @@ import { createId, nowIso } from "@/lib/database"
 
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 
+// Skill catalog — kept lower-bound on cost (substring matching uses each
+// entry) but materially expanded to cover modern stack (Sprint 4 / ATS-B30).
 const SKILL_CATALOG = {
   programmingLanguages: [
     "Java",
@@ -30,26 +32,84 @@ const SKILL_CATALOG = {
     "SQL",
     "C#",
     "Go",
+    "Rust",
     "Ruby",
     "PHP",
     "Kotlin",
     "Scala",
     "Swift",
     "C++",
+    "C",
+    "Elixir",
+    "Erlang",
+    "Haskell",
+    "Bash",
+    "Shell",
+    "Lua",
+    "R",
+    "MATLAB",
+    "Julia",
+    "Dart",
+    "Objective-C",
+    "Solidity",
   ],
   frameworks: [
     "Spring Boot",
     "Spring",
     "React",
     "Next.js",
+    "Nuxt",
+    "Remix",
+    "Astro",
+    "Svelte",
+    "SvelteKit",
+    "Solid",
     "Node.js",
     "Express",
+    "NestJS",
+    "Fastify",
+    "Hapi",
     "Angular",
     "Vue",
     "Django",
     "Flask",
+    "FastAPI",
+    "Pyramid",
+    "Rails",
+    "Sinatra",
     "Laravel",
+    "Symfony",
+    "Phoenix",
+    "Ktor",
+    "Micronaut",
+    "Quarkus",
+    "Gin",
+    "Echo",
+    "Fiber",
+    "ASP.NET",
     ".NET",
+    "Blazor",
+    "Tailwind",
+    "Bootstrap",
+    "Chakra UI",
+    "MUI",
+    "Material UI",
+    "React Native",
+    "Flutter",
+    "Vite",
+    "Webpack",
+    "esbuild",
+    "Bun",
+    "Deno",
+    "tRPC",
+    "Apollo",
+    "Prisma",
+    "Drizzle",
+    "Sequelize",
+    "TypeORM",
+    "SQLAlchemy",
+    "Hibernate",
+    "JPA",
   ],
   databases: [
     "PostgreSQL",
@@ -61,40 +121,171 @@ const SKILL_CATALOG = {
     "DynamoDB",
     "Snowflake",
     "BigQuery",
+    "Cassandra",
+    "Elasticsearch",
+    "OpenSearch",
+    "Neo4j",
+    "ClickHouse",
+    "CockroachDB",
+    "MariaDB",
+    "Memcached",
+    "Couchbase",
+    "Firestore",
+    "Supabase",
+    "Planetscale",
+    "TimescaleDB",
+    "DuckDB",
+    "InfluxDB",
+    "RabbitMQ",
+    "Kinesis",
   ],
-  cloudPlatforms: ["AWS", "Azure", "Google Cloud", "GCP", "EC2", "S3", "Lambda"],
+  cloudPlatforms: [
+    "AWS",
+    "Azure",
+    "Google Cloud",
+    "GCP",
+    "EC2",
+    "S3",
+    "Lambda",
+    "ECS",
+    "EKS",
+    "Fargate",
+    "CloudFront",
+    "CloudFormation",
+    "CloudWatch",
+    "Cloudflare",
+    "DigitalOcean",
+    "Vercel",
+    "Netlify",
+    "Heroku",
+    "Render",
+    "Fly.io",
+    "Railway",
+    "Linode",
+  ],
   tools: [
     "Docker",
     "Kubernetes",
+    "Helm",
     "Git",
+    "GitHub",
+    "GitLab",
+    "Bitbucket",
     "GitHub Actions",
-    "CI/CD",
+    "GitLab CI",
+    "CircleCI",
     "Jenkins",
+    "Travis CI",
+    "TeamCity",
+    "Argo CD",
+    "Spinnaker",
+    "CI/CD",
     "Kafka",
+    "Kafka Streams",
+    "RabbitMQ",
+    "Pulsar",
+    "NATS",
     "Terraform",
+    "Pulumi",
+    "Ansible",
+    "Chef",
+    "Puppet",
+    "SaltStack",
+    "Datadog",
+    "New Relic",
+    "Sentry",
+    "Grafana",
+    "Prometheus",
+    "Splunk",
+    "PagerDuty",
+    "Opsgenie",
+    "Honeycomb",
     "Jira",
-    "Linux",
-    "REST APIs",
+    "Linear",
+    "Asana",
+    "Notion",
+    "Figma",
+    "Sketch",
+    "Storybook",
+    "Cypress",
+    "Playwright",
+    "Selenium",
+    "Jest",
+    "Vitest",
+    "Pytest",
+    "JUnit",
+    "RSpec",
+    "Postman",
+    "Insomnia",
+    "Swagger",
+    "OpenAPI",
+    "gRPC",
+    "Protobuf",
     "GraphQL",
+    "REST APIs",
+    "WebSockets",
     "Microservices",
+    "Event Sourcing",
+    "Linux",
+    "Bash",
+    "nginx",
+    "Apache",
+    "Envoy",
+    "Istio",
+    "Consul",
+    "Vault",
+    "DBT",
+    "Airflow",
+    "Dagster",
+    "Prefect",
+    "Spark",
+    "Polars",
+    "Pandas",
+    "NumPy",
+    "scikit-learn",
+    "PyTorch",
+    "TensorFlow",
+    "Keras",
+    "OpenAI",
+    "LangChain",
+    "LlamaIndex",
+    "Hugging Face",
   ],
   businessSkills: [
     "Agile",
     "Scrum",
+    "Kanban",
+    "OKRs",
     "Stakeholder Management",
     "Requirements Gathering",
     "Data Analysis",
     "Process Improvement",
     "Product Strategy",
+    "Roadmapping",
+    "User Research",
+    "A/B Testing",
+    "Experimentation",
+    "SQL Analytics",
+    "Business Intelligence",
+    "Forecasting",
+    "Budgeting",
+    "Vendor Management",
   ],
   softSkills: [
     "Collaboration",
     "Communication",
     "Leadership",
     "Mentoring",
+    "Coaching",
     "Problem Solving",
     "Cross-functional",
     "Documentation",
+    "Customer Empathy",
+    "Ownership",
+    "Adaptability",
+    "Strategic Thinking",
+    "Public Speaking",
+    "Writing",
   ],
 }
 
@@ -1192,15 +1383,35 @@ function collectLinesNear(text: string, markers: string[]) {
 }
 
 function extractResponsibilities(text: string) {
-  const section = collectLinesNear(text, ["responsibilities", "what you will do", "duties"])
-  const source = section || text
-
+  const section = collectLinesNear(text, [
+    "responsibilities",
+    "what you will do",
+    "what you'll do",
+    "duties",
+    "the role",
+    "key tasks",
+    "day to day",
+  ])
+  if (!section) return []
   return unique(
-    source
+    section
       .split("\n")
       .map((line) => line.trim().replace(/^[-*•]\s*/, ""))
-      .filter((line) => /\b(build|develop|design|manage|collaborate|optimize|maintain|analyze|lead|support)\b/i.test(line))
-      .slice(0, 8)
+      // Keep verb-leaning bullets AS WELL AS noun-form lines so JDs written
+      // as "Ownership of system reliability" are no longer invisible
+      // (ATS-B42).
+      .filter(
+        (line) =>
+          line.length >= 12 &&
+          line.length <= 240 &&
+          (/\b(build|develop|design|manage|collaborate|optimize|maintain|analyze|lead|support|own|ship|drive|deliver|partner|deploy|operate)\b/i.test(
+            line,
+          ) ||
+            /\b(ownership|management|design|delivery|stewardship|responsibility|maintenance|coordination)\b/i.test(
+              line,
+            )),
+      )
+      .slice(0, 10),
   )
 }
 
@@ -1408,6 +1619,12 @@ export function generateTailoredResume(input: {
   const tailoredScore = scoreResumeAgainstJob(resumeText, profile, analysis)
   const originalScore = scoreResumeAgainstJob(masterResume.parsedText, masterResume.structuredProfile, analysis)
 
+  // Recompute keyword coverage against the tailored text so the displayed
+  // status reflects user-confirmed additions instead of the stale master
+  // (ATS-B36). Preserves the originalCoverage as `coverageBefore` for the
+  // change log / UI diff if the caller wants it.
+  const tailoredCoverage = buildKeywordCoverage(resumeText, analysis)
+
   const resumeJson: TailoredResumeJson = {
     contact: profile.contact,
     summary: profile.summary,
@@ -1416,7 +1633,7 @@ export function generateTailoredResume(input: {
     projects: profile.projects,
     education: profile.education,
     certifications: profile.certifications,
-    keywordCoverage: originalCoverage,
+    keywordCoverage: tailoredCoverage,
     unsupportedKeywords,
     changeLog,
     scoreExplanation: `Estimated resume match score improved from ${originalScore.originalScore}% to ${tailoredScore.originalScore}% by emphasizing supported keywords and preserving unsupported-skill guardrails.`,
@@ -1432,16 +1649,40 @@ export function generateTailoredResume(input: {
     originalScore: originalScore.originalScore,
     tailoredScore: tailoredScore.originalScore,
     scoreBreakdown: tailoredScore.breakdown,
-    keywordCoverage: originalCoverage,
+    keywordCoverage: tailoredCoverage,
     changeLog,
   }
+}
+
+function inferCategoryForUnknownSkill(skill: string): keyof StructuredResumeProfile["skills"] {
+  // Heuristic for skills not in SKILL_CATALOG. Previously everything fell
+  // into "tools" — DBT, Datadog, Pulumi, Snowflake, etc. all wrongly
+  // categorized (ATS-B24). Look for shape clues in the name.
+  const lower = skill.toLowerCase()
+  if (/\b(aws|azure|gcp|cloud|cloudfront|cloudwatch|kubernetes|k8s|fargate|lambda)\b/.test(lower)) {
+    return "cloudPlatforms"
+  }
+  if (/\b(sql|postgres|mysql|mariadb|sqlite|mongo|redis|cassandra|dynamodb|snowflake|bigquery|clickhouse|warehouse)\b/.test(lower)) {
+    return "databases"
+  }
+  if (/\b(react|vue|svelte|angular|next|nuxt|remix|astro|rails|django|flask|fastapi|spring|express|nestjs|laravel)\b/.test(lower)) {
+    return "frameworks"
+  }
+  if (/(\.js|\.ts|\.py|\.go|\.rs|\.rb|^c\+\+|^c#|^c$|^go$|^rust|^kotlin|^swift|^scala|^elixir|^erlang)/.test(lower)) {
+    return "programmingLanguages"
+  }
+  if (/\b(communication|leadership|collaboration|stakeholder|mentor|teamwork|empathy)\b/.test(lower)) {
+    return "softSkills"
+  }
+  return "tools"
 }
 
 function addSkillToProfile(profile: StructuredResumeProfile, skill: string) {
   const targetCategory =
     (Object.entries(SKILL_CATALOG).find(([, skills]) =>
       skills.some((catalogSkill) => canonical(catalogSkill) === canonical(skill))
-    )?.[0] as keyof StructuredResumeProfile["skills"] | undefined) ?? "tools"
+    )?.[0] as keyof StructuredResumeProfile["skills"] | undefined) ??
+    inferCategoryForUnknownSkill(skill)
 
   profile.skills[targetCategory] = unique([...profile.skills[targetCategory], skill])
 }

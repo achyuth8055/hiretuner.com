@@ -119,12 +119,16 @@ function getCurrentJobDescription(): string | null {
 
   // Last-resort: longest content block on the page.
   // Upper bound raised from 12k → 100k so long Workday / Greenhouse JDs no
-  // longer fall through the filter just for being verbose.
+  // longer fall through the filter just for being verbose. The keyword regex
+  // is multi-language (EXT-E13) so a JD in German / French / Spanish doesn't
+  // get filtered out for not containing the literal English words.
+  const JD_SHAPE_RE =
+    /(responsib|requirement|qualif|experience|responsabil|exigenc|anford|qualifik|erfahr|requisito|experi|expérienc|compéten|aptitud|tâche|tarea)/i;
   const candidates = Array.from(document.querySelectorAll('main, article, [class*="description"], [class*="job"], section'));
   let best: { el: Element; len: number } | null = null;
   for (const el of candidates) {
     const text = (el.textContent || '').trim();
-    if (text.length > 600 && text.length < 100000 && /(responsib|requirement|qualif|experience)/i.test(text)) {
+    if (text.length > 600 && text.length < 100000 && JD_SHAPE_RE.test(text)) {
       if (!best || text.length > best.len) best = { el, len: text.length };
     }
   }

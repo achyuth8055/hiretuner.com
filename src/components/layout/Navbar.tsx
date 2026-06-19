@@ -26,7 +26,7 @@ export async function Navbar() {
           <Link href="/#product" className="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-colors active:scale-95 duration-200">
             Product
           </Link>
-          {/* Tools dropdown — CSS hover/focus-within so the nav stays a server
+          {/* Tools dropdown - CSS hover/focus-within so the nav stays a server
               component and every tool link is present in the DOM for crawlers. */}
           <div className="relative group">
             <button

@@ -140,6 +140,19 @@ export function TemplateGallery() {
                   </span>
                 ))}
               </div>
+              <div className="flex items-center gap-2 mt-stack-sm">
+                <Button asChild className="flex-1">
+                  <Link href={`/signup?template=${template.id}`}>Use this template</Link>
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => setActive(template)}
+                  className="px-3 py-2 rounded-full text-body-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container-high transition-colors"
+                  aria-label={`Preview ${template.name}`}
+                >
+                  Preview
+                </button>
+              </div>
             </div>
           </div>
         ))}

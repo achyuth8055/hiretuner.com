@@ -293,7 +293,7 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
                 <>
                   <span className="font-medium text-primary text-body-sm">{file.name}</span>
                   <span className="text-xs text-on-surface-variant">
-                    {(file.size / 1024).toFixed(1)} KB — click to replace, or drop a new file
+                    {(file.size / 1024).toFixed(1)} KB - click to replace, or drop a new file
                   </span>
                 </>
               ) : (

@@ -44,6 +44,47 @@ export const resumeTemplates: ResumeTemplate[] = [
     theme: { accent: "#1e3a5f", accentSoft: "#eef2f7", ink: "#1f2937", muted: "#52606d", fontHeading: SANS, fontBody: SERIF, headingStyle: "underline", density: "regular" },
   },
 
+  // --- Tech / Engineer ATS (Jake's-Resume style) ---------------------------
+  // Centered name + role subtitle, horizontal-rule under each section heading,
+  // categorized skills, dense bullet body. The classic dev/engineer format that
+  // recruiters and ATS tooling expect.
+  {
+    id: "tech-classic-serif",
+    name: "Tech Classic Serif",
+    category: "resume",
+    layout: "classic",
+    tags: ["Classic", "ATS-safe", "Technical", "Serif", "One-page"],
+    description: "Centered serif header with rule-under-section headings — the canonical engineer / .NET / SDE resume layout.",
+    theme: { accent: "#111827", accentSoft: "#e5e7eb", ink: "#111827", muted: "#374151", fontHeading: SERIF, fontBody: SERIF, headingStyle: "underline", density: "compact" },
+  },
+  {
+    id: "tech-classic-sans",
+    name: "Engineer ATS",
+    category: "resume",
+    layout: "classic",
+    tags: ["Classic", "ATS-safe", "Technical", "One-page"],
+    description: "ATS-first centered header with sans body and rules under each section — clean and recruiter-friendly.",
+    theme: { accent: "#0f172a", accentSoft: "#e2e8f0", ink: "#0f172a", muted: "#475569", fontHeading: SANS, fontBody: SANS, headingStyle: "underline", density: "compact" },
+  },
+  {
+    id: "dev-clean",
+    name: "Developer Clean",
+    category: "resume",
+    layout: "classic",
+    tags: ["Classic", "Technical", "Minimal", "Two-tone"],
+    description: "Quiet two-tone classic layout with serif headings and sans body — great for senior engineering and developer roles.",
+    theme: { accent: "#1f2937", accentSoft: "#e5e7eb", ink: "#1f2937", muted: "#4b5563", fontHeading: SERIF, fontBody: SANS, headingStyle: "underline", density: "regular" },
+  },
+  {
+    id: "tech-monospace",
+    name: "SDE Mono",
+    category: "resume",
+    layout: "classic",
+    tags: ["Classic", "Technical", "Monospace", "One-page"],
+    description: "Mono-headings on a centered classic layout — distinctive but still ATS-safe for technical roles.",
+    theme: { accent: "#0f172a", accentSoft: "#e2e8f0", ink: "#0f172a", muted: "#475569", fontHeading: MONO, fontBody: SANS, headingStyle: "underline", density: "compact" },
+  },
+
   // --- Single column, modern/left ------------------------------------------
   {
     id: "modern-indigo",

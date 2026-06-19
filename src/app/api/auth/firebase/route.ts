@@ -144,7 +144,10 @@ export async function POST(request: Request) {
     upsertUsageForUser(user.id)
   }
 
-  await createSessionForUser(user.id)
+  await createSessionForUser(user.id, {
+    userAgent: request.headers.get("user-agent"),
+    ip: request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? null,
+  })
   return jsonOk({
     user: { id: user.id, name: user.name, email: user.email },
     firebaseUid: decoded.uid,

@@ -302,6 +302,12 @@ export type Session = {
   userId: string
   expiresAt: string
   createdAt: string
+  // Captured at session creation so the user can recognize devices in the
+  // "active sessions" UI (AUTH-M1). All three are best-effort and may be
+  // empty for legacy sessions.
+  userAgent?: string
+  ip?: string
+  lastSeenAt?: string
 }
 
 export type PasswordResetToken = {

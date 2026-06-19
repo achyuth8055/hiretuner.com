@@ -23,7 +23,7 @@ export function LogoutButton({ className }: { className?: string }) {
           await firebaseSignOut(auth)
         }
       } catch {
-        /* non-fatal — backend cookie is already cleared above */
+        /* non-fatal - backend cookie is already cleared above */
       }
     }
     window.location.href = "/login"

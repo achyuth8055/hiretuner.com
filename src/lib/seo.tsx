@@ -92,7 +92,7 @@ export function breadcrumbLd(crumbs: { name: string; path: string }[]): Record<s
 }
 
 /**
- * WebApplication structured data for the free browser tools — no install, free
+ * WebApplication structured data for the free browser tools - no install, free
  * to use. Mirrors the SoftwareApplication markup on the home page.
  */
 export function webApplicationLd({
@@ -152,7 +152,7 @@ export function articleLd({
 
 /**
  * FAQPage structured data. Only use when the same questions and answers are
- * visible on the page — Google requires the markup to match rendered content.
+ * visible on the page - Google requires the markup to match rendered content.
  */
 export function faqLd(items: { q: string; a: string }[]): Record<string, unknown> {
   return {

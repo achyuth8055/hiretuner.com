@@ -173,6 +173,31 @@ export function getSubscriptionForUser(userId: string) {
   return readDatabase().subscriptions.find((subscription) => subscription.userId === userId) ?? null
 }
 
+// Read-only usage snapshot. Returns a zero-initialized row when none exists
+// without writing — used in the auth hot path so a GET /api/auth/me doesn't
+// dirty the database (AUTH-M4).
+export function getUsageSnapshotForUser(userId: string, month = currentUsageMonth()) {
+  const usage = readDatabase().usages.find(
+    (item) => item.userId === userId && item.month === month,
+  )
+  if (usage) return usage
+  const timestamp = nowIso()
+  return {
+    id: "ephemeral",
+    userId,
+    month,
+    jdScansUsed: 0,
+    tailoredResumesUsed: 0,
+    pdfDownloadsUsed: 0,
+    atsChecksUsed: 0,
+    resumeMatchChecksUsed: 0,
+    salaryEstimatesUsed: 0,
+    publicToolUsageUsed: 0,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  }
+}
+
 export function upsertUsageForUser(userId: string, month = currentUsageMonth()) {
   return updateDatabase((database) => {
     let usage = database.usages.find((item) => item.userId === userId && item.month === month)

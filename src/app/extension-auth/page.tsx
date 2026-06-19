@@ -2,7 +2,7 @@ import { Suspense } from "react"
 import { ExtensionAuthBridge } from "./ExtensionAuthBridge"
 
 export const metadata = {
-  title: "Sign in to HireTuner — Extension",
+  title: "Sign in to HireTuner - Extension",
   description: "Sign in to your HireTuner account so the Chrome extension can use your plan.",
   robots: { index: false, follow: false },
 }

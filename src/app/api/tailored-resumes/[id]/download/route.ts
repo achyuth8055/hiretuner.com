@@ -1,16 +1,64 @@
 import type { NextRequest } from "next/server"
-import { readDatabase } from "@/lib/database"
-import { jsonError, refundUsage, requireApiUser, reserveUsage } from "@/lib/http"
+import { findUserById, readDatabase } from "@/lib/database"
+import { verifyDownloadSignature } from "@/lib/download-signatures"
+import {
+  jsonError,
+  refundUsage,
+  requireApiUser,
+  reserveUsage,
+  resolvePlan,
+} from "@/lib/http"
 import { renderTailoredResumePdf } from "@/lib/pdf-renderer"
 
 export const runtime = "nodejs"
 
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
-  const userContext = requireApiUser(request)
-  if (userContext instanceof Response) return userContext
+  const { id } = await context.params
+  const url = new URL(request.url)
+  const sig = url.searchParams.get("sig")
+  const expRaw = url.searchParams.get("exp")
+  const signedUid = url.searchParams.get("uid")
 
-  // Atomic check+increment so concurrent downloads can't exceed the cap.
-  const reservation = reserveUsage(userContext.user.id, "pdfDownloadsUsed", userContext.plan)
+  // Two valid auth paths: signed link OR session cookie. Try signed first
+  // so a freshly-minted link works in any tab (no session reuse required).
+  let authedUserId: string | null = null
+  let plan: ReturnType<typeof resolvePlan> = "free"
+
+  if (sig && expRaw && signedUid) {
+    const expiresAt = Number(expRaw)
+    const valid = verifyDownloadSignature({
+      scope: "tailored-resume",
+      resourceId: id,
+      userId: signedUid,
+      expiresAt,
+      signature: sig,
+    })
+    if (valid) {
+      const user = findUserById(signedUid)
+      if (user) {
+        const subscription =
+          readDatabase().subscriptions.find((s) => s.userId === user.id) ?? null
+        authedUserId = user.id
+        plan = resolvePlan(subscription)
+      }
+    } else {
+      return jsonError(
+        "Download link is invalid or expired. Open the resume in your dashboard to get a fresh link.",
+        403,
+        "invalid_signature",
+      )
+    }
+  }
+
+  // Fall back to the session-cookie path when no signed params are present.
+  if (!authedUserId) {
+    const userContext = requireApiUser(request)
+    if (userContext instanceof Response) return userContext
+    authedUserId = userContext.user.id
+    plan = userContext.plan
+  }
+
+  const reservation = reserveUsage(authedUserId, "pdfDownloadsUsed", plan)
   if (!reservation.ok) {
     return jsonError(reservation.message, 402, "upgrade_required", {
       limit: reservation.limit,
@@ -20,19 +68,15 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
   }
 
   try {
-    const { id } = await context.params
     const tailoredResume = readDatabase().tailoredResumes.find(
-      (resume) => resume.id === id && resume.userId === userContext.user.id
+      (resume) => resume.id === id && resume.userId === authedUserId,
     )
 
     if (!tailoredResume) {
-      refundUsage(userContext.user.id, "pdfDownloadsUsed")
+      refundUsage(authedUserId, "pdfDownloadsUsed")
       return jsonError("Tailored resume not found.", 404, "not_found")
     }
 
-    // Renders the chosen template via @react-pdf/renderer when available, or
-    // falls back to the legacy single-page Helvetica PDF when the package
-    // hasn't been installed yet.
     const pdf = await renderTailoredResumePdf(tailoredResume)
     const filename = `hiretuner-resume-v${tailoredResume.versionNumber}.pdf`
 
@@ -44,7 +88,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       },
     })
   } catch (error) {
-    refundUsage(userContext.user.id, "pdfDownloadsUsed")
+    refundUsage(authedUserId, "pdfDownloadsUsed")
     throw error
   }
 }

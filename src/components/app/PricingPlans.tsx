@@ -105,7 +105,7 @@ export function PricingPlans() {
           </div>
           <p className="font-body-sm text-body-sm text-inverse-primary mt-2 border-b border-outline-variant/30 pb-4">
             {yearly
-              ? "Just $4.16 / month, billed annually — nearly 3 months free."
+              ? "Just $4.16 / month, billed annually - nearly 3 months free."
               : "Everything you need for an active job hunt."}
           </p>
           <ul className="mt-4 space-y-3 flex-grow font-body-sm text-body-sm">
@@ -127,7 +127,7 @@ export function PricingPlans() {
         <div className="bg-surface-container-lowest border border-secondary rounded-xl p-stack-lg flex flex-col relative shadow-md hover:border-secondary transition-colors">
           <div className="absolute top-0 right-6 transform -translate-y-1/2">
             <span className="bg-tertiary-container text-on-tertiary-container font-label-uppercase text-[10px] px-3 py-1 rounded-full shadow-sm">
-              {yearly ? "Max — Best Value" : "Unlimited"}
+              {yearly ? "Max - Best Value" : "Unlimited"}
             </span>
           </div>
           <h3 className="font-headline-md text-headline-md text-primary">

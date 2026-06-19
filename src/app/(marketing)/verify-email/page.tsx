@@ -2,7 +2,7 @@ import Link from "next/link"
 import { VerifyEmailClient } from "./VerifyEmailClient"
 
 export const metadata = {
-  title: "Verify Email — HireTuner",
+  title: "Verify Email - HireTuner",
   description: "Confirm your HireTuner email address.",
   robots: { index: false, follow: false },
 }
@@ -23,7 +23,7 @@ export default async function VerifyEmailPage({ searchParams }: Props) {
           <>
             <p className="font-body-sm text-body-sm text-on-surface-variant mb-stack-md">
               Use the link in the verification email we sent. If you can&apos;t find it, check
-              spam — or sign in and resend from{" "}
+              spam - or sign in and resend from{" "}
               <Link href="/dashboard/settings" className="text-secondary underline">
                 Settings
               </Link>

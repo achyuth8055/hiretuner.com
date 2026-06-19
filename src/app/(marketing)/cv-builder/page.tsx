@@ -5,7 +5,7 @@ import { pageMetadata, JsonLd, breadcrumbLd, webApplicationLd, faqLd } from "@/l
 
 const TITLE = "Free CV Builder"
 const DESCRIPTION =
-  "Create a professional curriculum vitae online for free. Build a complete, well-structured CV with sections for education, experience, publications, and skills — formatted for academic and international applications."
+  "Create a professional curriculum vitae online for free. Build a complete, well-structured CV with sections for education, experience, publications, and skills - formatted for academic and international applications."
 const PATH = "/cv-builder"
 
 export const metadata = pageMetadata({
@@ -26,7 +26,7 @@ const SECTIONS = [
   {
     icon: "school",
     title: "Education and credentials",
-    body: "List degrees, certifications, and coursework in a clear reverse-chronological order — the foundation recruiters and admissions committees scan first.",
+    body: "List degrees, certifications, and coursework in a clear reverse-chronological order - the foundation recruiters and admissions committees scan first.",
   },
   {
     icon: "work_history",
@@ -36,7 +36,7 @@ const SECTIONS = [
   {
     icon: "menu_book",
     title: "Publications and presentations",
-    body: "Add dedicated sections for papers, talks, posters, and grants — essential for academic, scientific, and research applications.",
+    body: "Add dedicated sections for papers, talks, posters, and grants - essential for academic, scientific, and research applications.",
   },
   {
     icon: "language",
@@ -51,7 +51,7 @@ const SECTIONS = [
   {
     icon: "picture_as_pdf",
     title: "Polished PDF export",
-    body: "Download a clean, consistently formatted PDF that holds its structure across multiple pages — no broken spacing or misaligned columns.",
+    body: "Download a clean, consistently formatted PDF that holds its structure across multiple pages - no broken spacing or misaligned columns.",
   },
 ]
 
@@ -69,7 +69,7 @@ const STEPS = [
   {
     step: "3",
     title: "Refine the wording",
-    body: "Use built-in suggestions to tighten descriptions and keep phrasing consistent across every entry — without overstating anything.",
+    body: "Use built-in suggestions to tighten descriptions and keep phrasing consistent across every entry - without overstating anything.",
   },
   {
     step: "4",
@@ -97,7 +97,7 @@ const FAQ = [
   },
   {
     q: "Should I use a CV or a resume for my job search?",
-    a: "If you are applying to most jobs in the US, you likely want a resume — use our resume builder instead. If you are applying for academic positions, research roles, or jobs in regions where a CV is standard, the CV builder is the right fit.",
+    a: "If you are applying to most jobs in the US, you likely want a resume - use our resume builder instead. If you are applying for academic positions, research roles, or jobs in regions where a CV is standard, the CV builder is the right fit.",
   },
 ]
 
@@ -108,7 +108,7 @@ export default function CvBuilderPage() {
       <JsonLd data={webApplicationLd({ name: TITLE, description: DESCRIPTION, path: PATH })} />
       <JsonLd data={faqLd(FAQ.map((item) => ({ q: item.q, a: item.a })))} />
 
-      {/* Hero — text/CSS only to keep LCP fast */}
+      {/* Hero - text/CSS only to keep LCP fast */}
       <section className="max-w-[1200px] mx-auto px-margin-page py-stack-xl w-full text-center flex flex-col items-center">
         <span className="font-label-uppercase text-label-uppercase uppercase tracking-wide text-secondary bg-secondary-container/40 px-3 py-1 rounded-full mb-stack-md">
           Free CV Builder
@@ -118,7 +118,7 @@ export default function CvBuilderPage() {
         </h1>
         <p className="font-body-base text-body-base text-on-surface-variant max-w-2xl mb-stack-lg text-lg">
           Create a well-structured curriculum vitae with sections for education, experience, publications,
-          and skills — formatted for academic, research, and international applications.
+          and skills - formatted for academic, research, and international applications.
         </p>
         <div className="flex flex-col sm:flex-row gap-stack-sm">
           <Button size="lg" className="px-8 py-4 h-auto font-bold tracking-wider rounded-lg" asChild>
@@ -167,7 +167,7 @@ export default function CvBuilderPage() {
         </div>
       </section>
 
-      {/* Ad — below the fold, content slot */}
+      {/* Ad - below the fold, content slot */}
       <section className="max-w-[1200px] mx-auto px-margin-page py-stack-lg w-full">
         <AdSlot slot="content" />
       </section>
@@ -176,7 +176,7 @@ export default function CvBuilderPage() {
       <section className="max-w-[1200px] mx-auto px-margin-page py-stack-xl w-full border-t border-outline-variant/20">
         <div className="max-w-3xl mx-auto flex flex-col gap-stack-md">
           <h2 className="font-headline-md text-headline-md font-bold text-primary">
-            CV or resume — which one do you need?
+            CV or resume - which one do you need?
           </h2>
           <p className="font-body-base text-body-base text-on-surface-variant">
             The two documents are not interchangeable. A curriculum vitae is a complete, multi-page record
@@ -185,7 +185,7 @@ export default function CvBuilderPage() {
             UK, Europe, and beyond.
           </p>
           <p className="font-body-base text-body-base text-on-surface-variant">
-            A resume is shorter — usually one page — and tailored to a specific job, emphasizing the most
+            A resume is shorter - usually one page - and tailored to a specific job, emphasizing the most
             relevant achievements. If you are applying to companies in the US or Canada, a resume is almost
             always what you want. Build one with our{" "}
             <Link href="/resume-builder" className="text-secondary underline underline-offset-2">

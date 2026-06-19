@@ -102,6 +102,7 @@ function launchBridgeFlow(apiUrl: string): Promise<{
   idToken: string;
   email: string | null;
   name: string | null;
+  uid: string | null;
 }> {
   return new Promise((resolve, reject) => {
     if (!chrome.identity || !chrome.identity.launchWebAuthFlow) {
@@ -133,6 +134,7 @@ function launchBridgeFlow(apiUrl: string): Promise<{
             idToken,
             email: hash.get("email"),
             name: hash.get("name"),
+            uid: hash.get("uid"),
           });
         } catch (e) {
           reject(e instanceof Error ? e : new Error("Failed to parse bridge response."));
@@ -159,12 +161,13 @@ export async function signInWithGoogle(): Promise<{
   const bridge = await launchBridgeFlow(apiUrl);
   const idToken = bridge.idToken;
 
-  // Build a fake-ish user object using the email/name we got from the bridge.
-  // The Firebase Web SDK isn't sign-in-state-aware here, but the backend trusts
-  // the ID token, and we cache enough locally to render the popup correctly.
+  // Build a user object using the bridge result. Use the real Firebase UID
+  // returned by the bridge page (EXT-E17) rather than the email — fixes
+  // collisions when multiple installs share the same address and avoids
+  // stale uids if the user changes their email.
   const result = {
     user: {
-      uid: bridge.email ?? "ext-user",
+      uid: bridge.uid ?? bridge.email ?? "ext-user",
       email: bridge.email,
       displayName: bridge.name,
       getIdToken: async () => idToken,
