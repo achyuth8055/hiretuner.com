@@ -9,7 +9,11 @@ import {
 import { jsonError, jsonOk, refundUsage, requireApiUser, readJson, reserveUsage } from "@/lib/http"
 import { isLlmTailorConfigured, tailorResumeWithLLM } from "@/lib/llm-tailor"
 import { logger } from "@/lib/logger"
-import { generateTailoredResume } from "@/lib/resume-engine"
+import {
+  generateTailoredResume,
+  renderResumeText,
+  scoreResumeAgainstJob,
+} from "@/lib/resume-engine"
 import type { Application, TailoredResume } from "@/lib/rolefit-types"
 import { optionalStringArray, requireString, ValidationFailed } from "@/lib/validate"
 
@@ -150,9 +154,32 @@ export async function POST(request: NextRequest) {
             reason: note,
           })
         })
+
+        // Re-score the resume against the JD using the LLM-rewritten text so
+        // the tailored score reflects keyword surfaces the LLM added. Without
+        // this, the score is computed BEFORE the overlay and stays flat.
+        const rewrittenText = renderResumeText(generated.resumeJson)
+        const rescored = scoreResumeAgainstJob(
+          rewrittenText,
+          {
+            ...masterResume.structuredProfile,
+            summary: generated.resumeJson.summary,
+            skills: generated.resumeJson.skills,
+            workExperience: generated.resumeJson.workExperience,
+            projects: generated.resumeJson.projects,
+            education: generated.resumeJson.education,
+            certifications: generated.resumeJson.certifications,
+          },
+          jobDescription.analysis,
+        )
+        generated.tailoredScore = rescored.originalScore
+        generated.scoreBreakdown = rescored.breakdown
+        generated.resumeText = rewrittenText
+
         logger.info("api.tailored-resumes", "LLM overlay applied", {
           userId: context.user.id,
           notes: overlay.notes.length,
+          rescored: rescored.originalScore,
         })
       }
     }

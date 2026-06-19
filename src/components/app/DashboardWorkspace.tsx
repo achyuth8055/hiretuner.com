@@ -482,8 +482,16 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
             <UsageBar label="Tailor credits" value={usage.tailoredResumesUsed} total={initial.limits.tailoredResumes} />
             <div className="bg-surface-bright rounded p-3 my-4 border border-outline-variant/20">
               <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">
-                You are on the <span className="font-medium text-primary">{initial.plan === "starter" ? "Starter Plan" : "Free Plan"}</span>.
-                {initial.plan === "free" ? " Upgrade to download PDFs and unlock full limits." : " Starter features are active."}
+                You are on the{" "}
+                <span className="font-medium text-primary">
+                  {initial.plan === "pro" ? "Pro Plan" : initial.plan === "starter" ? "Starter Plan" : "Free Plan"}
+                </span>
+                .
+                {initial.plan === "free"
+                  ? " Upgrade to download PDFs and unlock full limits."
+                  : initial.plan === "pro"
+                    ? " Unlimited tailoring, ad-free, priority support active."
+                    : " Starter features are active."}
               </p>
             </div>
             {initial.plan !== "pro" && <UpgradeButton currentPlan={initial.plan} />}
