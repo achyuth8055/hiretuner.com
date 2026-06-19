@@ -4,6 +4,7 @@ import { useMemo, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/Button"
 import { UpgradeButton } from "@/components/app/UpgradeButton"
+import { UpgradeStatusBanner } from "@/components/app/UpgradeStatusBanner"
 import type {
   Application,
   JobDescription,
@@ -208,6 +209,7 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
 
   return (
     <div className="p-gutter flex-1 overflow-y-auto max-w-[1400px] mx-auto w-full">
+      <UpgradeStatusBanner currentPlan={initial.plan} />
       <div className="mb-stack-lg flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
           <h2 className="font-headline-md text-headline-md text-primary">Your job search workspace</h2>
@@ -233,7 +235,7 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
           {upgradeMessage && (
             <div className="rounded border border-secondary/30 bg-secondary/5 p-3 text-body-sm text-primary flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <span>{upgradeMessage}</span>
-              <UpgradeButton className="sm:w-56" />
+              <UpgradeButton className="sm:w-56" currentPlan={initial.plan} />
             </div>
           )}
         </div>
@@ -247,9 +249,9 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-gutter mb-stack-xl">
-        <form id="master-resume" onSubmit={uploadResume} className="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-stack-md shadow-sm scroll-mt-24">
+        <form id="your-resume" onSubmit={uploadResume} className="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-stack-md shadow-sm scroll-mt-32">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-label-uppercase text-label-uppercase text-primary">Master Resume</h3>
+            <h3 className="font-label-uppercase text-label-uppercase text-primary">Your Resume</h3>
             <span className="text-xs text-on-surface-variant">{uploadState.replace("_", " ")}</span>
           </div>
           <label
@@ -317,21 +319,29 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
             </div>
           ) : (
             <div className="mt-4 rounded bg-surface-bright border border-outline-variant/20 p-3 text-body-sm text-on-surface-variant">
-              Empty state: upload your master resume before generating tailored resumes.
+              Upload your existing resume to start tailoring — or build one from scratch below.
             </div>
           )}
           <Button className="w-full mt-4" disabled={loading === "upload" || !file} type="submit">
             {loading === "upload"
               ? "Parsing..."
               : !file
-                ? "Choose a resume to upload"
+                ? "Upload your existing resume"
                 : masterResume
-                  ? "Replace Master Resume"
-                  : "Upload Resume"}
+                  ? "Replace resume"
+                  : "Upload resume"}
           </Button>
+          {!masterResume && (
+            <div className="mt-stack-md pt-stack-md border-t border-outline-variant/30 text-center">
+              <span className="text-xs text-on-surface-variant block mb-2">Don&apos;t have a resume yet?</span>
+              <Button asChild variant="outline" className="w-full" type="button">
+                <Link href="/dashboard/build">Build one from scratch</Link>
+              </Button>
+            </div>
+          )}
         </form>
 
-        <form id="tailor" onSubmit={analyzeJob} className="xl:col-span-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-stack-md shadow-sm scroll-mt-24">
+        <form id="tailor" onSubmit={analyzeJob} className="xl:col-span-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-stack-md shadow-sm scroll-mt-32">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-label-uppercase text-label-uppercase text-primary">Tailor New Resume</h3>
             <span className="text-xs text-on-surface-variant">JD analysis</span>
@@ -383,7 +393,7 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
       )}
 
       <div className="flex flex-col lg:flex-row gap-gutter">
-        <div id="applications" className="flex-1 bg-surface-container-lowest border border-outline-variant/50 rounded-lg shadow-sm overflow-hidden flex flex-col scroll-mt-24">
+        <div id="applications" className="flex-1 bg-surface-container-lowest border border-outline-variant/50 rounded-lg shadow-sm overflow-hidden flex flex-col scroll-mt-32">
           <div className="p-stack-md border-b border-outline-variant/30 flex justify-between items-center bg-surface-bright">
             <h3 className="font-label-uppercase text-label-uppercase text-primary">Recent Applications</h3>
             <span className="text-body-sm text-on-surface-variant">{applications.length} total</span>
@@ -460,7 +470,7 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
         </div>
 
         <div className="w-full lg:w-80 flex flex-col gap-gutter">
-          <div id="usage" className="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-stack-md shadow-sm scroll-mt-24">
+          <div id="usage" className="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-stack-md shadow-sm scroll-mt-32">
             <h4 className="font-label-uppercase text-label-uppercase text-primary mb-4">Plan Usage</h4>
             <UsageBar label="JD scans" value={usage.jdScansUsed} total={initial.limits.jdScans} />
             <UsageBar label="Tailor credits" value={usage.tailoredResumesUsed} total={initial.limits.tailoredResumes} />
@@ -470,7 +480,7 @@ export function DashboardWorkspace({ initial }: DashboardWorkspaceProps) {
                 {initial.plan === "free" ? " Upgrade to download PDFs and unlock full limits." : " Starter features are active."}
               </p>
             </div>
-            <UpgradeButton />
+            {initial.plan !== "pro" && <UpgradeButton currentPlan={initial.plan} />}
           </div>
 
           <div className="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-stack-md shadow-sm">

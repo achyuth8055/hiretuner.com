@@ -1,12 +1,25 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { LogoutButton } from "@/components/app/LogoutButton"
 import { UpgradeButton } from "@/components/app/UpgradeButton"
+import { UserAvatar } from "@/components/app/UserAvatar"
+import { getCurrentUser } from "@/lib/auth"
+import { resolvePlan } from "@/lib/http"
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const auth = await getCurrentUser()
+  if (!auth) {
+    redirect("/login")
+  }
+
+  const plan = resolvePlan(auth.subscription)
+  const planLabel =
+    plan === "pro" ? "Pro Account" : plan === "starter" ? "Starter Account" : "Free Account"
+
   return (
     <div className="bg-background text-on-surface h-full flex antialiased w-full">
       {/* SideNavBar */}
@@ -19,14 +32,14 @@ export default function DashboardLayout({
             </div>
             <div>
               <h1 className="font-headline-md text-headline-md font-bold text-primary">HireTuner</h1>
-              <span className="font-body-sm text-body-sm text-on-surface-variant">Pro Account</span>
+              <span className="font-body-sm text-body-sm text-on-surface-variant">{planLabel}</span>
             </div>
           </div>
         </div>
 
         {/* Main Nav Links */}
         <div className="flex-1 space-y-1">
-          <Link href="/dashboard" className="flex items-center gap-3 px-3 py-2 bg-secondary-fixed text-on-secondary-fixed rounded-lg font-bold">
+          <Link href="/dashboard#top" className="flex items-center gap-3 px-3 py-2 bg-secondary-fixed text-on-secondary-fixed rounded-lg font-bold">
             <span className="material-symbols-outlined">dashboard</span>
             Dashboard
           </Link>
@@ -38,9 +51,9 @@ export default function DashboardLayout({
             <span className="material-symbols-outlined">assignment</span>
             Applications
           </Link>
-          <Link href="/dashboard#master-resume" className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg">
+          <Link href="/dashboard#your-resume" className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg">
             <span className="material-symbols-outlined">description</span>
-            Master Resume
+            Your Resume
           </Link>
           <Link href="/dashboard#usage" className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg">
             <span className="material-symbols-outlined">analytics</span>
@@ -59,7 +72,7 @@ export default function DashboardLayout({
             Help Center
           </Link>
           <LogoutButton className="flex w-full items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg text-left disabled:opacity-60" />
-          <UpgradeButton className="w-full mt-4" />
+          {plan !== "pro" && <UpgradeButton className="w-full mt-4" currentPlan={plan} />}
         </div>
       </nav>
 
@@ -74,7 +87,7 @@ export default function DashboardLayout({
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="hidden sm:flex items-center gap-2 bg-primary text-on-primary px-4 py-1.5 rounded-full font-body-sm text-body-sm hover:bg-surface-tint transition-colors focus:ring-2 focus:ring-secondary focus:ring-offset-2">
+            <Link href="/dashboard#tailor" className="hidden sm:flex items-center gap-2 bg-primary text-on-primary px-4 py-1.5 rounded-full font-body-sm text-body-sm hover:bg-surface-tint transition-colors focus:ring-2 focus:ring-secondary focus:ring-offset-2">
               <span className="material-symbols-outlined text-sm">add</span>
               Tailor New Resume
             </Link>
@@ -82,10 +95,19 @@ export default function DashboardLayout({
             <button className="text-on-surface-variant hover:text-primary transition-colors">
               <span className="material-symbols-outlined">notifications</span>
             </button>
-            <img className="w-8 h-8 rounded-full object-cover border border-outline-variant/50 cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWmVrfiWMFyTKcCBKId_RCTOfodqidNYY3ZC3v3PZrFwh-Ko4BXUcVA7YYxmFS26J3O_yda17YzpWf9rzHHuXPU_RiAcQm4MiX-ECRqZsFr1n_K3e9pTRA1FHaQC-u895zyjBhwLzjwWKFMoXDOfSs3bhQcgQXXi_G0Bgp1AVMKB8JkyKEYHpmgt6Czp-OyRjJogHYGTB04aJaGycUGSkh1ZNcbQDLn939HHgEtI0X4kyHbW7sVf0k89xkBVpBrm657D7u07jwFZQ" alt="User Profile" />
+            <Link href="/dashboard/settings" aria-label="Account settings">
+              <UserAvatar
+                name={auth.user.name}
+                email={auth.user.email}
+                photoUrl={auth.user.photoUrl}
+                size={32}
+                className="cursor-pointer"
+              />
+            </Link>
           </div>
         </header>
 
+        <div id="top" />
         {children}
       </main>
     </div>

@@ -35,6 +35,9 @@ export type User = {
   // in via a provider (Google) that verified the address. Null/undefined =
   // not verified yet. Legacy users (pre-feature) are treated as verified.
   emailVerifiedAt?: string | null
+  // Profile photo URL — captured from Google sign-in (`picture` claim). Empty
+  // for email/password accounts; the UI falls back to initials.
+  photoUrl?: string | null
   createdAt: string
   updatedAt: string
 }

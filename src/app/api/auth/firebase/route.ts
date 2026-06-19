@@ -74,6 +74,8 @@ export async function POST(request: Request) {
     (decoded.name as string | undefined)?.trim() ||
     email.split("@")[0] ||
     "HireTuner User"
+  const photoUrl =
+    (decoded.picture as string | undefined)?.trim() || null
 
   // Upsert user - match on email so an account can have multiple sign-in methods.
   let user = findUserByEmail(email)
@@ -91,6 +93,7 @@ export async function POST(request: Request) {
       // Google has already verified this email — we required
       // decoded.email_verified above. Skip the verification round-trip.
       emailVerifiedAt: timestamp,
+      photoUrl,
       createdAt: timestamp,
       updatedAt: timestamp,
     } satisfies User
@@ -123,15 +126,17 @@ export async function POST(request: Request) {
       email,
     })
   } else {
-    // Keep the display name in sync if Google changed it, and mark email
-    // as verified the first time the user signs in via Google (Firebase
+    // Keep the display name + photo in sync if Google changed them, and mark
+    // email as verified the first time the user signs in via Google (Firebase
     // already enforced email_verified above).
     const shouldUpdateName = user.name !== name
+    const shouldUpdatePhoto = photoUrl !== null && user.photoUrl !== photoUrl
     const shouldVerifyEmail = !user.emailVerifiedAt
-    if (shouldUpdateName || shouldVerifyEmail) {
+    if (shouldUpdateName || shouldUpdatePhoto || shouldVerifyEmail) {
       const updated: User = {
         ...user,
         name: shouldUpdateName ? name : user.name,
+        photoUrl: shouldUpdatePhoto ? photoUrl : user.photoUrl,
         emailVerifiedAt: shouldVerifyEmail ? nowIso() : user.emailVerifiedAt,
         updatedAt: nowIso(),
       }
